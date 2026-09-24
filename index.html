@@ -6,418 +6,306 @@
 <title>Ultron — Your AI Study Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#12121c; --bg-elev:#1b1b29; --bg-elev2:#22222f;
-    --text:#edeef4; --text-dim:#9a9ab0; --border:#2b2b3d;
-    --accent:#f5b942; --accent-ink:#3a2a05;
-    --accent2:#8b7bf7; --accent2-ink:#fff;
-    --danger:#e0637a;
-    box-sizing:border-box;
-    padding-top:env(safe-area-inset-top,0px);
-    padding-bottom:env(safe-area-inset-bottom,0px);
-  }
-  :root[data-theme="light"]{
-    --bg:#faf9f6; --bg-elev:#ffffff; --bg-elev2:#f1f0ec;
-    --text:#191924; --text-dim:#6c6c80; --border:#e3e2db;
-    --accent:#c9860f; --accent-ink:#fff;
-    --accent2:#6a58e0; --accent2-ink:#fff;
-  }
-  html,body{height:100%;}
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font-family:'Manrope',system-ui,-apple-system,sans-serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  button,input,select{font-family:inherit;}
-  :focus-visible{outline:2px solid var(--accent2); outline-offset:2px;}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important;}}
-
-  #app{max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
-
-  /* Top bar */
-  header.topbar{
-    position:sticky; top:0; z-index:5;
-    padding:calc(16px + env(safe-area-inset-top,0px)) 20px 14px;
-    background:var(--bg); border-bottom:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .brand{display:flex; align-items:center; gap:10px;}
-  .brand-mark{
-    width:34px; height:34px; border-radius:9px;
-    background:linear-gradient(135deg,var(--accent2),var(--accent));
-    display:flex; align-items:center; justify-content:center;
-    font-weight:800; color:#12121c; font-size:16px;
-  }
-  .brand-name{font-weight:800; font-size:19px; letter-spacing:-0.02em;}
-  .topbar-actions{display:flex; gap:8px; align-items:center;}
-  .icon-btn{
-    width:36px; height:36px; border-radius:9px; border:1px solid var(--border);
-    background:var(--bg-elev); color:var(--text); font-size:16px;
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-  }
-  select.lang-select{
-    background:var(--bg-elev); color:var(--text); border:1px solid var(--border);
-    border-radius:9px; padding:8px 10px; font-size:13px; font-weight:600; cursor:pointer;
-  }
-
-  main{flex:1; padding:20px 20px 100px;}
-
-  /* Onboarding */
-  .onboard-hero{margin-bottom:22px;}
-  .onboard-hero h1{font-size:28px; line-height:1.15; margin:0 0 8px; letter-spacing:-0.02em;}
-  .onboard-hero p{color:var(--text-dim); margin:0; font-size:15px; line-height:1.5;}
-  .field{margin-bottom:14px;}
-  .field label{display:block; font-size:13px; font-weight:600; color:var(--text-dim); margin-bottom:6px;}
-  .field input{
-    width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--border);
-    background:var(--bg-elev); color:var(--text); font-size:15px;
-  }
-  .field input:focus{border-color:var(--accent2);}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .primary-btn{
-    width:100%; padding:15px; border-radius:11px; border:none;
-    background:var(--accent); color:var(--accent-ink); font-weight:800; font-size:15px;
-    cursor:pointer; margin-top:8px;
-  }
-  .ghost-btn{
-    width:100%; padding:13px; border-radius:11px; border:1px solid var(--border);
-    background:transparent; color:var(--text); font-weight:700; font-size:14px; cursor:pointer;
-  }
-  .hint{font-size:12px; color:var(--text-dim); margin-top:10px; line-height:1.5;}
-
-  /* Home */
-  .greet{font-size:22px; font-weight:800; letter-spacing:-0.02em; margin:0 0 2px;}
-  .greet-sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
-  .hero-card{
-    background:linear-gradient(135deg,var(--accent2),#5d4cd6);
-    border-radius:16px; padding:22px; color:#fff; margin-bottom:18px;
-  }
-  .hero-num{font-size:40px; font-weight:800; line-height:1;}
-  .hero-label{font-size:13px; opacity:.85; margin-top:4px;}
-  .plan-badge{
-    display:inline-block; font-size:12px; font-weight:700; padding:4px 10px;
-    border-radius:20px; margin-top:12px;
-  }
-  .plan-free{background:rgba(255,255,255,.18); color:#fff;}
-  .plan-premium{background:var(--accent); color:var(--accent-ink);}
-
-  .section-title{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-dim); margin:22px 0 10px;}
-  .action-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .action-card{
-    background:var(--bg-elev); border:1px solid var(--border); border-radius:14px;
-    padding:16px; text-align:left; cursor:pointer; color:var(--text);
-  }
-  .action-card .em{font-size:22px; display:block; margin-bottom:8px;}
-  .action-card .t{font-weight:700; font-size:14px; margin-bottom:2px;}
-  .action-card .d{font-size:12px; color:var(--text-dim); line-height:1.4;}
-
-  .list-row{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:13px 0; border-bottom:1px solid var(--border); font-size:14px;
-  }
-  .list-row:last-child{border-bottom:none;}
-  .list-row .l{color:var(--text-dim);}
-  .list-row .v{font-weight:700;}
-
-  /* Focus mode */
-  .upload-zone{
-    border:1.5px dashed var(--border); border-radius:14px; padding:30px 18px;
-    text-align:center; color:var(--text-dim); font-size:14px; margin-bottom:16px;
-    background:var(--bg-elev);
-  }
-  .upload-zone input{display:none;}
-  .upload-zone label{color:var(--accent2); font-weight:700; cursor:pointer;}
-  .preview-img{width:100%; border-radius:12px; margin-bottom:14px; display:block;}
-  .explain-card{
-    background:var(--bg-elev); border:1px solid var(--border); border-left:3px solid var(--accent2);
-    border-radius:12px; padding:16px; font-size:14px; line-height:1.6; margin-bottom:16px;
-  }
-  .explain-card b{color:var(--accent2);}
-
-  /* Quiz */
-  .quiz-progress{font-size:12px; color:var(--text-dim); font-weight:700; margin-bottom:10px;}
-  .quiz-q{font-size:17px; font-weight:700; margin-bottom:16px; line-height:1.4;}
-  .opt-btn{
-    display:block; width:100%; text-align:left; padding:14px; border-radius:11px;
-    border:1px solid var(--border); background:var(--bg-elev); color:var(--text);
-    font-size:14px; margin-bottom:10px; cursor:pointer;
-  }
-  .opt-btn.correct{border-color:#57c08a; background:rgba(87,192,138,.12);}
-  .opt-btn.wrong{border-color:var(--danger); background:rgba(224,99,122,.12);}
-  .lock-card{
-    background:var(--bg-elev); border:1px dashed var(--border); border-radius:14px;
-    padding:20px; text-align:center; color:var(--text-dim); font-size:13px;
-  }
-
-  /* Bottom nav */
-  nav.tabbar{
-    position:fixed; bottom:0; left:0; right:0; z-index:5;
-    background:var(--bg-elev); border-top:1px solid var(--border);
-    padding:10px 8px calc(10px + env(safe-area-inset-bottom,0px));
-  }
-  .tabbar-inner{max-width:480px; margin:0 auto; display:flex; justify-content:space-around;}
-  .tab-btn{
-    background:none; border:none; color:var(--text-dim); font-size:11px; font-weight:600;
-    display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:4px 10px;
-  }
-  .tab-btn .em{font-size:19px;}
-  .tab-btn.active{color:var(--accent2);}
-
-  .empty-note{font-size:12px; color:var(--text-dim); text-align:center; margin-top:14px;}
+:root{--bg:#0f1017;--card:#181a25;--card2:#20222f;--text:#eef0f6;--dim:#9497ad;--line:#2a2d3d;--accent:#f5b942;--ink:#2e2004;--brand:#7c6cf5;--brand2:#5b4bd8;--good:#4fbf87;--bad:#e5647c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="light"]{--bg:#f6f5f1;--card:#fff;--card2:#efeee9;--text:#161722;--dim:#6b6d82;--line:#e2e1da;--accent:#c9860f;--ink:#fff;--brand:#6252e6;--brand2:#4a3cc4}
+html,body{height:100%}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#app{max-width:480px;margin:0 auto;min-height:100%}
+main{padding:20px 20px 110px;animation:up .25s ease}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;padding:14px 20px;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+.mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--accent));display:grid;place-items:center;color:#12121c;font-weight:800}
+.ib{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+h1{font-size:26px;line-height:1.2;letter-spacing:-.02em;margin:0 0 6px}
+.sub{color:var(--dim);font-size:14px;line-height:1.5;margin:0 0 20px}
+.st{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin:24px 0 10px}
+.f{margin-bottom:14px}.f label{display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:6px}
+.f input,.f textarea{width:100%;padding:13px 14px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:15px}
+.f input:focus,.f textarea:focus{border-color:var(--brand)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{width:100%;padding:15px;border-radius:12px;border:0;background:var(--accent);color:var(--ink);font-weight:800;font-size:15px;cursor:pointer;margin-top:8px;transition:transform .1s}
+.btn.g{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px}
+.btn:active{transform:scale(.98)}
+.hint{font-size:12px;color:var(--dim);line-height:1.5;margin-top:10px}
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--brand),var(--brand2));border-radius:18px;padding:22px;color:#fff;margin-bottom:6px}
+.hero:after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
+.hn{font-size:40px;font-weight:800;line-height:1}.hl{font-size:13px;opacity:.85;margin-top:4px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;margin-top:12px;background:rgba(255,255,255,.2);color:#fff}
+.badge.p{background:var(--accent);color:var(--ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ac{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;text-align:left;cursor:pointer;color:var(--text);transition:transform .1s,border-color .15s}
+.ac:active{transform:scale(.97)}.ac:hover{border-color:var(--brand)}
+.ac .ic{width:38px;height:38px;border-radius:11px;background:var(--card2);color:var(--brand);display:grid;place-items:center;margin-bottom:10px}
+.ac b{display:block;font-size:14px;margin-bottom:2px}.ac span{font-size:12px;color:var(--dim);line-height:1.4}
+.row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row:last-child{border:0}.row .l{color:var(--dim)}.row .v{font-weight:700;text-align:right}
+.act{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.act b{font-size:14px}.act small{display:block;font-size:12px;color:var(--dim);margin-top:2px}.act .sc{font-size:18px;font-weight:800;color:var(--brand)}
+.plan{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:15px;padding:16px;margin-bottom:12px;color:var(--text);cursor:pointer;position:relative}
+.plan.sel{border-color:var(--brand);background:var(--card2)}
+.plan .pn{font-weight:800;font-size:15px}.plan .pp{font-size:22px;font-weight:800;margin-top:4px}.plan .pp small{font-size:12px;color:var(--dim);font-weight:600}
+.plan ul{margin:8px 0 0;padding-left:18px;font-size:12.5px;color:var(--dim);line-height:1.6}
+.offer{display:inline-block;font-size:11px;font-weight:800;color:var(--good);background:rgba(79,191,135,.14);padding:3px 9px;border-radius:10px;margin-top:8px}
+.plan .tag{position:absolute;top:14px;right:14px;font-size:10.5px;font-weight:800;background:var(--accent);color:var(--ink);padding:3px 8px;border-radius:12px}
+.plan .chk{position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--brand);color:#fff;display:none;place-items:center}
+.plan.sel .chk{display:grid}.plan.sel .tag{display:none}
+.cam{position:relative;background:#000;border-radius:16px;overflow:hidden;margin-bottom:14px;aspect-ratio:3/4}
+.cam video,.cam img{width:100%;height:100%;object-fit:cover;display:block}
+.cam .frame{position:absolute;inset:14%;border:2px solid rgba(255,255,255,.7);border-radius:12px;pointer-events:none}
+.ph{aspect-ratio:3/4;border:1.5px dashed var(--line);border-radius:16px;background:var(--card);display:grid;place-items:center;text-align:center;color:var(--dim);font-size:14px;padding:24px;margin-bottom:14px}
+.ph .ic{width:54px;height:54px;border-radius:16px;background:var(--card2);color:var(--brand);display:grid;place-items:center;margin:0 auto 12px}
+.card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:12px;padding:16px;font-size:14px;line-height:1.6;margin-bottom:14px}
+.qs{counter-reset:q;list-style:none;margin:0;padding:0}
+.qs li{counter-increment:q;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px 13px 44px;margin-bottom:8px;font-size:14px;line-height:1.5;position:relative}
+.qs li:before{content:counter(q);position:absolute;left:12px;top:12px;width:22px;height:22px;border-radius:7px;background:var(--card2);color:var(--brand);font-weight:800;font-size:12px;display:grid;place-items:center}
+.dots{display:flex;gap:6px;margin-bottom:14px}.dot{height:5px;flex:1;border-radius:3px;background:var(--line)}.dot.d{background:var(--good)}.dot.n{background:var(--brand)}
+.qq{font-size:17px;font-weight:700;margin-bottom:16px;line-height:1.4}
+.opt{display:block;width:100%;text-align:left;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:14px;margin-bottom:10px;cursor:pointer}
+.opt.c{border-color:var(--good);background:rgba(79,191,135,.13)}.opt.w{border-color:var(--bad);background:rgba(229,100,124,.13)}
+.lock{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--dim);font-size:13px;margin-top:16px}
+.err{background:rgba(229,100,124,.12);border:1px solid var(--bad);color:var(--text);border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.5;margin-bottom:12px}
+.fine{font-size:11.5px;color:var(--dim);line-height:1.6;margin-top:16px}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.ti{max-width:480px;margin:0 auto;display:flex;justify-content:space-around}
+.tb{background:none;border:0;color:var(--dim);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 12px}
+.tb.a{color:var(--brand)}
 </style>
 </head>
 <body>
 <div id="app"></div>
-
 <script>
-const STORE_KEY = 'ultron_profile_v1';
-const THEME_KEY = 'ultron_theme_v1';
-const LANG_KEY = 'ultron_lang_v1';
-const QUIZ_KEY = 'ultron_quiz_v1';
-const PREMIUM_EMAILS = ['bharadwajashok289@gmail.com','manaskakkunuri55@gmail.com'];
+const K={p:'ultron_profile_v2',th:'ultron_theme_v1',pl:'ultron_plan_v1',st:'ultron_streak_v1',sc:'ultron_lastscore_v1',hist:'ultron_paidhist_v1',ch:'ultron_chats_v1'};
+const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const PREMIUM_EMAILS=['bharadwajashok289@gmail.com','manaskakkunuri55@gmail.com'];
+const UPI='8074294488-1@fam';
+const PLANS={
+ free:{name:'Free',first:0,then:0,f:['50 chats per day','Focus Mode scanning','1 quiz set']},
+ basic:{name:'Basic',first:99,then:199,f:['200 chats per day','Unlimited scans','Advanced quiz sets']},
+ pro:{name:'Pro',first:299,then:499,f:['Unlimited chats','Priority explanations','Monthly content updates']}
+};
+const ICO={
+ home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+ cam:'<path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="4"/>',
+ quiz:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+ chat:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+ card:'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+ moon:'<path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/>',
+ check:'<path d="M5 12l5 5 9-10"/>',
+ img:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>'
+};
+const ic=n=>`<svg class="i" viewBox="0 0 24 24">${ICO[n]}</svg>`;
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const STR = {
-  en:{tag:"Your AI study companion", welcome:"Let's get you set up", welcomeSub:"A few details so Ultron can personalize your studying.",
-    fullName:"Full name", cls:"Class", section:"Section", school:"School name", dob:"Date of birth", age:"Age", email:"Email ID",
-    start:"Get started", hi:"Hi", ready:"Ready to study smart today?", streak:"Day streak", free:"Free plan", premium:"Premium unlocked",
-    quickActions:"Quick actions", focusMode:"Focus Mode", focusDesc:"Snap your syllabus, get doubts explained", quizMode:"Quiz",
-    quizDesc:"Test yourself, function-wise", askDoubt:"Ask a doubt", askDesc:"Type a question, get an explanation",
-    profile:"Profile", details:"Your details", signOut:"Sign out", home:"Home", focus:"Focus", quiz:"Quiz", you:"You",
-    uploadTitle:"Upload a syllabus photo", uploadSub:"Tap to choose an image", demoNote:"Demo explanation — connect a live AI backend in the native build for real answers.",
-    startQuiz:"Start quiz from this topic", quizDone:"Quiz complete", score:"Your score", retry:"Try again", locked:"Unlock more quiz sets with Premium",
-    lang:"Language", update:"Monthly update", updateNote:"Content refreshed every month", offline:"Works offline once loaded — your profile and progress stay on this device."},
-  hi:{tag:"आपका AI स्टडी साथी", welcome:"चलिए शुरू करते हैं", welcomeSub:"कुछ जानकारी दें ताकि Ultron आपकी पढ़ाई को बेहतर बना सके।",
-    fullName:"पूरा नाम", cls:"कक्षा", section:"सेक्शन", school:"स्कूल का नाम", dob:"जन्म तिथि", age:"उम्र", email:"ईमेल आईडी",
-    start:"शुरू करें", hi:"नमस्ते", ready:"आज स्मार्ट तरीके से पढ़ने के लिए तैयार हैं?", streak:"दिन की लकीर", free:"फ्री प्लान", premium:"प्रीमियम अनलॉक",
-    quickActions:"त्वरित कार्य", focusMode:"फोकस मोड", focusDesc:"सिलेबस की फोटो लें, शंका समझें", quizMode:"क्विज़",
-    quizDesc:"खुद को परखें", askDoubt:"शंका पूछें", askDesc:"सवाल लिखें, समझ पाएं",
-    profile:"प्रोफ़ाइल", details:"आपकी जानकारी", signOut:"साइन आउट", home:"होम", focus:"फोकस", quiz:"क्विज़", you:"आप",
-    uploadTitle:"सिलेबस की फोटो अपलोड करें", uploadSub:"तस्वीर चुनने के लिए टैप करें", demoNote:"डेमो जवाब — असली AI उत्तर के लिए नेटिव ऐप में बैकएंड जोड़ें।",
-    startQuiz:"इस विषय से क्विज़ शुरू करें", quizDone:"क्विज़ पूरी हुई", score:"आपका स्कोर", retry:"फिर कोशिश करें", locked:"और क्विज़ के लिए प्रीमियम लें",
-    lang:"भाषा", update:"मासिक अपडेट", updateNote:"हर महीने नई सामग्री", offline:"एक बार लोड होने पर ऑफ़लाइन भी काम करता है — आपकी जानकारी इसी डिवाइस पर रहती है।"},
-  te:{tag:"మీ AI స్టడీ సహాయకుడు", welcome:"మొదలుపెడదాం", welcomeSub:"Ultron మీ చదువును మెరుగుపరచడానికి కొన్ని వివరాలు ఇవ్వండి.",
-    fullName:"పూర్తి పేరు", cls:"తరగతి", section:"సెక్షన్", school:"పాఠశాల పేరు", dob:"పుట్టిన తేదీ", age:"వయస్సు", email:"ఇమెయిల్ ఐడి",
-    start:"ప్రారంభించండి", hi:"నమస్తే", ready:"ఈరోజు స్మార్ట్‌గా చదవడానికి సిద్ధమా?", streak:"రోజుల వరుస", free:"ఫ్రీ ప్లాన్", premium:"ప్రీమియం అన్‌లాక్",
-    quickActions:"త్వరిత చర్యలు", focusMode:"ఫోకస్ మోడ్", focusDesc:"సిలబస్ ఫోటో తీయండి, సందేహాలు తీర్చుకోండి", quizMode:"క్విజ్",
-    quizDesc:"మిమ్మల్ని మీరు పరీక్షించుకోండి", askDoubt:"సందేహం అడగండి", askDesc:"ప్రశ్న రాయండి, వివరణ పొందండి",
-    profile:"ప్రొఫైల్", details:"మీ వివరాలు", signOut:"సైన్ అవుట్", home:"హోమ్", focus:"ఫోకస్", quiz:"క్విజ్", you:"మీరు",
-    uploadTitle:"సిలబస్ ఫోటో అప్‌లోడ్ చేయండి", uploadSub:"చిత్రం ఎంచుకోవడానికి నొక్కండి", demoNote:"డెమో వివరణ — నిజమైన AI సమాధానాల కోసం నేటివ్ యాప్‌లో బ్యాకెండ్ జోడించండి.",
-    startQuiz:"ఈ టాపిక్ నుండి క్విజ్ మొదలుపెట్టండి", quizDone:"క్విజ్ పూర్తయింది", score:"మీ స్కోరు", retry:"మళ్ళీ ప్రయత్నించండి", locked:"మరిన్ని క్విజ్‌ల కోసం ప్రీమియం తీసుకోండి",
-    lang:"భాష", update:"నెలవారీ అప్డేట్", updateNote:"ప్రతి నెలా కొత్త కంటెంట్", offline:"ఒకసారి లోడ్ అయ్యాక ఆఫ్‌లైన్‌లో కూడా పనిచేస్తుంది — మీ వివరాలు ఈ పరికరంలోనే ఉంటాయి."}
+const QUIZ={
+ free:{topic:'Photosynthesis basics',qs:[
+  {q:'What gas do plants absorb for photosynthesis?',o:['Oxygen','Carbon dioxide','Nitrogen','Hydrogen'],c:1},
+  {q:'Where does photosynthesis mainly occur?',o:['Roots','Chloroplast','Mitochondria','Nucleus'],c:1},
+  {q:'What is released as a byproduct?',o:['Oxygen','Carbon dioxide','Water','Glucose only'],c:0}]},
+ premium:{topic:'Photosynthesis — advanced',qs:[
+  {q:'Which pigment absorbs light most efficiently?',o:['Chlorophyll a','Carotene','Xanthophyll','Anthocyanin'],c:0},
+  {q:'Light-independent reactions occur in the:',o:['Thylakoid','Stroma','Cell wall','Vacuole'],c:1}]}
 };
 
-const QUIZ_SETS = {
-  free: {topic:"Photosynthesis basics", qs:[
-    {q:"What gas do plants absorb for photosynthesis?", opts:["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"], correct:1},
-    {q:"Where does photosynthesis mainly occur?", opts:["Roots","Chloroplast","Mitochondria","Nucleus"], correct:1},
-    {q:"What is released as a byproduct?", opts:["Oxygen","Carbon dioxide","Water","Glucose only"], correct:0}
-  ]},
-  premium: {topic:"Photosynthesis — advanced", qs:[
-    {q:"Which pigment absorbs light most efficiently?", opts:["Chlorophyll a","Carotene","Xanthophyll","Anthocyanin"], correct:0},
-    {q:"Light-independent reactions occur in the:", opts:["Thylakoid","Stroma","Cell wall","Vacuole"], correct:1}
-  ]}
-};
+let S={profile:ls.get(K.p),screen:'home',quiz:null,pick:'free',scan:null,topic:'',qs:null,camOn:false,camErr:''};
+let stream=null;
 
-let state = {
-  profile: JSON.parse(localStorage.getItem(STORE_KEY) || 'null'),
-  lang: localStorage.getItem(LANG_KEY) || 'en',
-  screen: 'home',
-  quiz: null
-};
-document.documentElement.setAttribute('data-theme', localStorage.getItem(THEME_KEY) || 'dark');
-
-function t(k){ return STR[state.lang][k]; }
-function isPremium(){ return state.profile && PREMIUM_EMAILS.includes((state.profile.email||'').trim().toLowerCase()); }
-function save(){ localStorage.setItem(STORE_KEY, JSON.stringify(state.profile)); }
-function toggleTheme(){
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem(THEME_KEY, next);
+const dayStr=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');
+function streak(){
+  const d=dayStr(new Date());
+  let s=ls.get(K.st)||{count:0,last:null};
+  if(s.last!==d){const y=new Date();y.setDate(y.getDate()-1);
+    s.count=s.last===dayStr(y)?s.count+1:1;s.last=d;ls.set(K.st,s)}
+  return s.count;
 }
-function setLang(l){ state.lang = l; localStorage.setItem(LANG_KEY, l); render(); }
-function go(screen){ state.screen = screen; render(); }
+S.streak=S.profile?streak():0;
+document.documentElement.setAttribute('data-theme',ls.get(K.th)||(window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
 
-function topbar(){
-  const opts = ['en','hi','te'].map(l=>`<option value="${l}" ${state.lang===l?'selected':''}>${l==='en'?'EN':l==='hi'?'हिं':'తె'}</option>`).join('');
-  return `<header class="topbar">
-    <div class="brand"><div class="brand-mark">U</div><div class="brand-name">Ultron</div></div>
-    <div class="topbar-actions">
-      <select class="lang-select" onchange="setLang(this.value)">${opts}</select>
-      <button class="icon-btn" onclick="toggleTheme()" aria-label="Toggle theme">${document.documentElement.getAttribute('data-theme')==='light'?'🌙':'☀️'}</button>
-    </div>
-  </header>`;
-}
+const getPlan=()=>S.profile&&PREMIUM_EMAILS.includes((S.profile.email||'').trim().toLowerCase())?'pro':(PLANS[ls.get(K.pl)]?ls.get(K.pl):'free');
+const isPrem=()=>getPlan()!=='free';
+const LIM={free:50,basic:200,pro:Infinity};
+const paidBefore=t=>(ls.get(K.hist)||[]).includes(t);
+const price=t=>paidBefore(t)?PLANS[t].then:PLANS[t].first;
+const chatsUsed=()=>{const d=ls.get(K.ch);return d&&d.day===dayStr(new Date())?d.n:0};
+const chatsLeft=()=>{const l=LIM[getPlan()];return l===Infinity?Infinity:Math.max(0,l-chatsUsed())};
+const leftTxt=()=>{const l=LIM[getPlan()];return l===Infinity?'Unlimited chats on your plan':chatsLeft()+' of '+l+' chats left today'};
+const planName=()=>PLANS[getPlan()].name+' plan';
+function theme(){const n=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';document.documentElement.setAttribute('data-theme',n);ls.set(K.th,n);render()}
+function go(s){stopCam();if(s!=='plans')S.offer=false;S.screen=s;render();window.scrollTo(0,0)}
+function payUPI(t){const p=PLANS[t];location.href=`upi://pay?pa=${encodeURIComponent(UPI)}&pn=Ultron&am=${price(t)}&cu=INR&tn=${encodeURIComponent('Ultron '+p.name+' subscription')}`}
+function markPaid(t){const h=ls.get(K.hist)||[];if(!h.includes(t))h.push(t);ls.set(K.hist,h);ls.set(K.pl,t);go('home')}
 
-function tabbar(){
-  const tabs = [['home',t('home'),'🏠'],['focus',t('focus'),'📸'],['quiz',t('quiz'),'📝'],['profile',t('you'),'👤']];
-  return `<nav class="tabbar"><div class="tabbar-inner">
-    ${tabs.map(([id,label,em])=>`<button class="tab-btn ${state.screen===id?'active':''}" onclick="go('${id}')"><span class="em">${em}</span>${label}</button>`).join('')}
-  </div></nav>`;
-}
+function topbar(){return `<header class="top"><div class="brand"><div class="mark">U</div>Ultron</div><button class="ib" onclick="theme()" aria-label="Toggle theme">${ic(document.documentElement.getAttribute('data-theme')==='light'?'moon':'sun')}</button></header>`}
+function tabs(){const T=[['home','Home','home'],['focus','Scan','cam'],['quiz','Quiz','quiz'],['profile','You','user']];
+ return `<nav><div class="ti">${T.map(([id,l,i])=>`<button class="tb ${S.screen===id?'a':''}" onclick="go('${id}')">${ic(i)}${l}</button>`).join('')}</div></nav>`}
+function shell(b){document.getElementById('app').innerHTML=`${topbar()}<main>${b}</main>${tabs()}`}
 
-function renderOnboarding(){
-  document.getElementById('app').innerHTML = `
-    ${topbar()}
-    <main>
-      <div class="onboard-hero">
-        <h1>${t('welcome')}</h1>
-        <p>${t('welcomeSub')}</p>
-      </div>
-      <form onsubmit="submitOnboarding(event)">
-        <div class="field"><label>${t('fullName')}</label><input required id="f_name"></div>
-        <div class="row2">
-          <div class="field"><label>${t('cls')}</label><input required id="f_class"></div>
-          <div class="field"><label>${t('section')}</label><input required id="f_section"></div>
-        </div>
-        <div class="field"><label>${t('school')}</label><input required id="f_school"></div>
-        <div class="row2">
-          <div class="field"><label>${t('dob')}</label><input required type="date" id="f_dob"></div>
-          <div class="field"><label>${t('age')}</label><input required type="number" min="3" max="25" id="f_age"></div>
-        </div>
-        <div class="field"><label>${t('email')}</label><input required type="email" id="f_email"></div>
-        <button class="primary-btn" type="submit">${t('start')}</button>
-      </form>
-      <p class="hint">${t('offline')}</p>
-    </main>`;
-}
-window.submitOnboarding = function(e){
-  e.preventDefault();
-  state.profile = {
-    name: document.getElementById('f_name').value,
-    cls: document.getElementById('f_class').value,
-    section: document.getElementById('f_section').value,
-    school: document.getElementById('f_school').value,
-    dob: document.getElementById('f_dob').value,
-    age: document.getElementById('f_age').value,
-    email: document.getElementById('f_email').value
-  };
-  save();
-  state.screen = 'home';
-  render();
-};
+/* ---------- Onboarding ---------- */
+function planCards(sel){return Object.entries(PLANS).map(([id,p])=>`
+ <button type="button" class="plan ${sel===id?'sel':''}" onclick="S.pick='${id}';render()" aria-pressed="${sel===id}">
+  ${id==='pro'?'<span class="tag">BEST VALUE</span>':''}<span class="chk">${ic('check')}</span>
+  <div class="pn">${p.name}</div>
+  <div class="pp">${p.first?'₹'+p.first:'₹0'}<small>${p.first?' first month, then ₹'+p.then+'/month':' forever'}</small></div>${p.first?'<span class="offer">First-time offer</span>':''}
+  <ul>${p.f.map(x=>`<li>${x}</li>`).join('')}</ul></button>`).join('')}
 
-function renderHome(){
-  const p = state.profile, premium = isPremium();
-  document.getElementById('app').innerHTML = `
-    ${topbar()}
-    <main>
-      <p class="greet">${t('hi')}, ${p.name.split(' ')[0]} 👋</p>
-      <p class="greet-sub">${t('ready')}</p>
-      <div class="hero-card">
-        <div class="hero-num">1</div>
-        <div class="hero-label">${t('streak')}</div>
-        <span class="plan-badge ${premium?'plan-premium':'plan-free'}">${premium?t('premium'):t('free')}</span>
-      </div>
-      <p class="section-title">${t('quickActions')}</p>
-      <div class="action-grid">
-        <button class="action-card" onclick="go('focus')"><span class="em">📸</span><div class="t">${t('focusMode')}</div><div class="d">${t('focusDesc')}</div></button>
-        <button class="action-card" onclick="go('quiz')"><span class="em">📝</span><div class="t">${t('quizMode')}</div><div class="d">${t('quizDesc')}</div></button>
-        <button class="action-card" onclick="go('focus')"><span class="em">💬</span><div class="t">${t('askDoubt')}</div><div class="d">${t('askDesc')}</div></button>
-        <button class="action-card" onclick="go('profile')"><span class="em">📅</span><div class="t">${t('update')}</div><div class="d">${t('updateNote')}</div></button>
-      </div>
-    </main>
-    ${tabbar()}`;
-}
-
-function renderFocus(){
-  document.getElementById('app').innerHTML = `
-    ${topbar()}
-    <main>
-      <p class="greet">${t('focusMode')}</p>
-      <p class="greet-sub">${t('focusDesc')}</p>
-      <div class="upload-zone" id="uz">
-        <div>${t('uploadTitle')}</div>
-        <label for="fileIn">${t('uploadSub')}</label>
-        <input type="file" id="fileIn" accept="image/*" onchange="handleUpload(event)">
-      </div>
-      <div id="focusResult"></div>
-    </main>
-    ${tabbar()}`;
-}
-window.handleUpload = function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    document.getElementById('focusResult').innerHTML = `
-      <img class="preview-img" src="${ev.target.result}" alt="Uploaded syllabus page">
-      <div class="explain-card"><b>${QUIZ_SETS.free.topic}:</b> Photosynthesis is how plants turn sunlight, water and carbon dioxide into glucose and oxygen inside the chloroplast. Focus on the light and dark reactions — that split is a common exam question.<br><br>${t('demoNote')}</div>
-      <button class="primary-btn" onclick="go('quiz')">${t('startQuiz')}</button>`;
-  };
-  reader.readAsDataURL(file);
-};
-
-function renderQuiz(){
-  if(!state.quiz){
-    state.quiz = {set:'free', i:0, score:0, done:false, picked:null};
+function onboarding(){
+  if(!S.step){
+    document.getElementById('app').innerHTML=`${topbar()}<main><h1>Choose your plan</h1><p class="sub">Start free, or unlock more daily chats with a first-time offer. You can change it any time.</p>${planCards(S.pick)}<button class="btn" onclick="S.step=2;render()">Continue</button></main>`;
+    return;
   }
-  const q = state.quiz;
-  const set = QUIZ_SETS[q.set];
-  let body;
+  const keep=['name','class','section','school','dob','age','email'].reduce((o,k)=>{const e=document.getElementById('f_'+k);o[k]=e?e.value:'';return o},{});
+  document.getElementById('app').innerHTML=`${topbar()}<main>
+  <h1>Let's get you set up</h1><p class="sub">A few details so Ultron can personalize your studying.</p>
+  <form onsubmit="submitOnb(event)">
+   <div class="f"><label>Full name</label><input required id="f_name" autocomplete="name" value="${esc(keep.name)}"></div>
+   <div class="r2"><div class="f"><label>Class</label><input required id="f_class" value="${esc(keep.class)}"></div><div class="f"><label>Section</label><input required id="f_section" value="${esc(keep.section)}"></div></div>
+   <div class="f"><label>School name</label><input required id="f_school" value="${esc(keep.school)}"></div>
+   <div class="r2"><div class="f"><label>Date of birth</label><input required type="date" id="f_dob" value="${esc(keep.dob)}"></div><div class="f"><label>Age</label><input required type="number" min="3" max="25" id="f_age" value="${esc(keep.age)}"></div></div>
+   <div class="f"><label>Email ID</label><input required type="email" id="f_email" autocomplete="email" value="${esc(keep.email)}"></div>
+   <p class="hint" style="margin:0 0 4px">Selected plan: <b style="color:var(--text)">${PLANS[S.pick].name}</b></p>
+   <button class="btn" type="submit">${S.pick==='free'?'Get started':'Continue to payment'}</button>
+   <button class="btn g" type="button" onclick="S.step=0;render()">Change plan</button>
+  </form>
+  <p class="hint">You can change your plan any time from your Profile. Your profile and progress stay on this device.</p></main>`;
+}
+function submitOnb(e){
+  e.preventDefault();const v=id=>document.getElementById('f_'+id).value.trim();
+  S.profile={name:v('name'),cls:v('class'),section:v('section'),school:v('school'),dob:v('dob'),age:v('age'),email:v('email')};
+  ls.set(K.p,S.profile);
+  if(S.pick==='free')ls.del(K.pl);
+  S.streak=streak();S.screen=S.pick==='free'?'home':'plans';S.offer=S.pick!=='free';render();
+}
+
+/* ---------- Home ---------- */
+function home(){
+  const p=S.profile,prem=isPrem(),last=ls.get(K.sc);
+  const A=(s,i,t,d)=>`<button class="ac" onclick="go('${s}')"><div class="ic">${ic(i)}</div><b>${t}</b><span>${d}</span></button>`;
+  shell(`<h1>Hi, ${esc(p.name.split(' ')[0])}</h1><p class="sub">Ready to study smart today?</p>
+  <div class="hero"><div class="hn">${S.streak}</div><div class="hl">Day streak</div><span class="badge ${prem?'p':''}">${planName()}</span><div class="hl" style="margin-top:10px">${leftTxt()}</div></div>
+  <p class="st">Quick actions</p>
+  <div class="grid">${A('focus','cam','Scan syllabus','Use your camera to get questions')}${A('quiz','quiz','Quiz','Test yourself topic-wise')}${A('ask','chat','Ask a doubt','Type a question, get help')}${A('profile','user','Profile','Details & upgrade plan')}</div>
+  <p class="st">Recent activity</p>
+  ${last?`<div class="act"><div><b>${esc(last.topic)}</b><small>Last attempt</small></div><div class="sc">${last.score}/${last.total}</div></div>`:`<p class="hint">No quizzes yet — scan a syllabus page or start a quiz.</p>`}`);
+}
+
+/* ---------- Ask ---------- */
+function ask(){
+  shell(`<h1>Ask a doubt</h1><p class="sub">Type a question and get a study approach.</p>
+  <p class="hint" id="cl" style="margin:0 0 12px">${leftTxt()}</p><div class="f"><textarea id="aq" rows="3" placeholder='e.g. "Why does ice float on water?"'></textarea></div>
+  <button class="btn" onclick="doAsk()">Explain it to me</button><div id="ar">${S.ask?askCard(S.ask):''}</div>`);
+}
+function askCard(q){return `<div class="card" style="margin-top:16px"><b>On "${esc(q)}":</b><ul style="margin:8px 0;padding-left:18px"><li>Break it into 2–3 smaller ideas.</li><li>Connect it to something you already know.</li><li>Explain it back in one sentence, out loud.</li></ul><span class="hint">Demo explanation — connect a live AI backend for real answers.</span></div>`}
+function limitCard(){return `<div class="lock">You've used all your chats for today. They reset tomorrow.<button class="btn g" onclick="go('profile')">Upgrade in Profile</button></div>`}
+function doAsk(){
+  const v=document.getElementById('aq').value.trim();if(!v)return;
+  if(chatsLeft()<=0){document.getElementById('ar').innerHTML=limitCard();return}
+  ls.set(K.ch,{day:dayStr(new Date()),n:chatsUsed()+1});S.ask=v;
+  document.getElementById('ar').innerHTML=askCard(v);document.getElementById('cl').textContent=leftTxt();
+}
+
+/* ---------- Camera scan ---------- */
+async function startCam(){
+  S.camErr='';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){S.camErr='Camera is not available in this browser. Use "Upload a photo" instead.';return focusView()}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+    S.camOn=true;S.scan=null;S.qs=null;focusView();
+    const v=document.getElementById('vid');v.srcObject=stream;v.play().catch(()=>{});
+  }catch(e){
+    S.camOn=false;
+    S.camErr=(e&&e.name==='NotAllowedError')?'Camera permission was denied. Allow camera access in your browser or device settings, then try again — or upload a photo instead.':'Could not open the camera. You can upload a photo instead.';
+    focusView();
+  }
+}
+function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}S.camOn=false}
+function snap(){
+  const v=document.getElementById('vid');if(!v||!v.videoWidth)return;
+  const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+  S.scan=c.toDataURL('image/jpeg',.85);stopCam();focusView();
+}
+function upload(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{stopCam();S.scan=x.target.result;S.qs=null;S.camErr='';focusView()};r.readAsDataURL(f)}
+function makeQs(){
+  const t=(document.getElementById('topic').value||'').trim();if(!t)return;
+  S.topic=t;
+  S.qs=[`Define "${t}" in your own words.`,`What are the 3 most important points to remember about ${t}?`,`Give a real-life example that shows ${t}.`,`What is the most common mistake students make with ${t}?`,`How does ${t} connect to the previous chapter?`,`Write one exam-style question on ${t} and answer it.`];
+  focusView();
+}
+function focusView(){
+  let view;
+  if(S.camOn)view=`<div class="cam"><video id="vid" playsinline muted></video><div class="frame"></div></div><button class="btn" onclick="snap()">Capture page</button><button class="btn g" onclick="stopCam();focusView()">Cancel</button>`;
+  else if(S.scan)view=`<div class="cam"><img src="${S.scan}" alt="Scanned syllabus page"></div>
+   ${S.qs?`<p class="st">Questions for “${esc(S.topic)}”</p><ol class="qs">${S.qs.map(q=>`<li>${esc(q)}</li>`).join('')}</ol><button class="btn" onclick="go('quiz')">Take a quiz</button>`:
+   `<div class="f"><label>What topic or chapter is on this page?</label><input id="topic" placeholder="e.g. Photosynthesis"></div><button class="btn" onclick="makeQs()">Generate questions</button>`}
+   <button class="btn g" onclick="S.scan=null;S.qs=null;focusView()">Scan another page</button>
+   <p class="hint">Demo mode: questions are built from the topic you enter. Reading the page text automatically needs an AI/OCR backend.</p>`;
+  else view=`<div class="ph"><div><div class="ic">${ic('img')}</div>Point your camera at a syllabus or textbook page</div></div>
+   <button class="btn" onclick="startCam()">Open camera</button>
+   <label class="btn g" style="display:block;text-align:center;cursor:pointer">Upload a photo<input type="file" accept="image/*" onchange="upload(event)" hidden></label>
+   <p class="hint">Ultron asks for camera permission only when you tap “Open camera”. Photos stay on your device.</p>`;
+  shell(`<h1>Scan syllabus</h1><p class="sub">Capture a page and get study questions for it.</p>${S.camErr?`<div class="err" role="alert">${esc(S.camErr)}</div>`:''}${view}`);
+  if(S.camOn&&stream){const v=document.getElementById('vid');v.srcObject=stream;v.play().catch(()=>{})}
+}
+
+/* ---------- Plans ---------- */
+function payCards(){
+  const cur=getPlan(),vip=PREMIUM_EMAILS.includes((S.profile.email||'').trim().toLowerCase());
+  return Object.entries(PLANS).filter(([id])=>id!=='free').map(([id,p])=>`<div class="plan ${cur===id?'sel':''}" style="cursor:default">
+   <span class="chk">${ic('check')}</span><div class="pn">${p.name}</div>${paidBefore(id)?`<div class="pp">₹${p.then}<small> per month · regular price</small></div>`:`<div class="pp">₹${p.first}<small> first month, then ₹${p.then}/month</small></div><span class="offer">First-time offer</span>`}
+   <ul>${p.f.map(x=>`<li>${x}</li>`).join('')}</ul>
+   <button class="btn" onclick="payUPI('${id}')">Pay via UPI — ₹${price(id)}</button>
+   <button class="btn g" onclick="markPaid('${id}')">I've completed payment</button></div>`).join('')
+  +(cur!=='free'&&!vip?`<button class="btn g" onclick="ls.del(K.pl);go('profile')">Switch to Free</button>`:'')
+  +`<p class="fine">Payment opens your UPI app with the amount pre-filled. The first-time price applies to your first month on each plan; renewals are at the regular price. This demo can't verify payment automatically — a real launch needs a payment gateway (e.g. Razorpay) with server-side verification. On Google Play, in-app subscriptions must use Google Play Billing instead of UPI links.</p>`;
+}
+function plans(){
+  shell(`<h1>Complete your plan</h1><p class="sub">Pay to unlock your plan. You can also upgrade later from Profile.</p>
+  ${payCards()}
+  <button class="btn g" onclick="S.offer=false;go('home')">Skip for now — continue with Free</button>`);
+}
+
+/* ---------- Quiz ---------- */
+function quiz(){
+  if(!S.quiz)S.quiz={set:'free',i:0,score:0,done:false,pick:null};
+  const q=S.quiz,set=QUIZ[q.set];let b;
   if(q.done){
-    body = `<p class="quiz-q">${t('quizDone')} 🎉</p>
-      <p style="font-size:15px; color:var(--text-dim); margin-bottom:20px;">${t('score')}: <b style="color:var(--text)">${q.score}/${set.qs.length}</b></p>
-      <button class="ghost-btn" onclick="state.quiz=null; render();">${t('retry')}</button>
-      ${!isPremium() ? `<div class="lock-card" style="margin-top:16px;">🔒 ${t('locked')}</div>` : `<button class="primary-btn" onclick="state.quiz={set:'premium',i:0,score:0,done:false,picked:null}; render();">${QUIZ_SETS.premium.topic}</button>`}`;
-  } else {
-    const cur = set.qs[q.i];
-    body = `<p class="quiz-progress">${set.topic} · ${q.i+1}/${set.qs.length}</p>
-      <p class="quiz-q">${cur.q}</p>
-      ${cur.opts.map((o,idx)=>`<button class="opt-btn ${q.picked!==null ? (idx===cur.correct?'correct':(idx===q.picked?'wrong':'')) : ''}" ${q.picked!==null?'disabled':''} onclick="answerQuiz(${idx})">${o}</button>`).join('')}
-      ${q.picked!==null ? `<button class="primary-btn" onclick="nextQuiz()">Next</button>` : ''}`;
+    b=`<h1>Quiz complete</h1><p class="sub">Your score: <b style="color:var(--text)">${q.score}/${set.qs.length}</b></p>
+    <button class="btn g" onclick="S.quiz=null;render()">Try again</button>
+    ${isPrem()?`<button class="btn" onclick="S.quiz={set:'premium',i:0,score:0,done:false,pick:null};render()">${QUIZ.premium.topic}</button>`:`<div class="lock">Unlock more quiz sets with Premium<button class="btn g" onclick="go('profile')">Upgrade in Profile</button></div>`}`;
+  }else{
+    const c=set.qs[q.i];
+    b=`<div class="dots">${set.qs.map((_,i)=>`<span class="dot ${i<q.i?'d':i===q.i?'n':''}"></span>`).join('')}</div><p class="st" style="margin-top:0">${esc(set.topic)}</p>
+    <p class="qq">${c.q}</p>
+    ${c.o.map((o,i)=>`<button class="opt ${q.pick!==null?(i===c.c?'c':i===q.pick?'w':''):''}" ${q.pick!==null?'disabled':''} onclick="ans(${i})">${o}</button>`).join('')}
+    ${q.pick!==null?`<button class="btn" onclick="nextQ()">${q.i+1>=set.qs.length?'Finish':'Next'}</button>`:''}`;
   }
-  document.getElementById('app').innerHTML = `${topbar()}<main>${body}</main>${tabbar()}`;
+  shell(b);
 }
-window.answerQuiz = function(idx){
-  const q = state.quiz, set = QUIZ_SETS[q.set];
-  q.picked = idx;
-  if(idx === set.qs[q.i].correct) q.score++;
-  render();
-};
-window.nextQuiz = function(){
-  const q = state.quiz, set = QUIZ_SETS[q.set];
-  q.i++; q.picked = null;
-  if(q.i >= set.qs.length) q.done = true;
-  render();
-};
+function ans(i){const q=S.quiz,s=QUIZ[q.set];q.pick=i;if(i===s.qs[q.i].c)q.score++;render()}
+function nextQ(){const q=S.quiz,s=QUIZ[q.set];q.i++;q.pick=null;if(q.i>=s.qs.length){q.done=true;ls.set(K.sc,{score:q.score,total:s.qs.length,topic:s.topic})}render()}
 
-function renderProfile(){
-  const p = state.profile, premium = isPremium();
-  document.getElementById('app').innerHTML = `
-    ${topbar()}
-    <main>
-      <p class="greet">${t('profile')}</p>
-      <span class="plan-badge ${premium?'plan-premium':'plan-free'}" style="margin-bottom:16px;">${premium?t('premium'):t('free')}</span>
-      <p class="section-title">${t('details')}</p>
-      <div class="list-row"><span class="l">${t('fullName')}</span><span class="v">${p.name}</span></div>
-      <div class="list-row"><span class="l">${t('cls')}</span><span class="v">${p.cls}</span></div>
-      <div class="list-row"><span class="l">${t('section')}</span><span class="v">${p.section}</span></div>
-      <div class="list-row"><span class="l">${t('school')}</span><span class="v">${p.school}</span></div>
-      <div class="list-row"><span class="l">${t('dob')}</span><span class="v">${p.dob}</span></div>
-      <div class="list-row"><span class="l">${t('age')}</span><span class="v">${p.age}</span></div>
-      <div class="list-row"><span class="l">${t('email')}</span><span class="v">${p.email}</span></div>
-      <div class="list-row"><span class="l">${t('lang')}</span><span class="v">${state.lang.toUpperCase()}</span></div>
-      <div class="list-row"><span class="l">${t('update')}</span><span class="v">Sep 2026</span></div>
-      <button class="ghost-btn" style="margin-top:22px;" onclick="signOut()">${t('signOut')}</button>
-    </main>
-    ${tabbar()}`;
+/* ---------- Profile ---------- */
+function profile(){
+  const p=S.profile,R=(l,v)=>`<div class="row"><span class="l">${l}</span><span class="v">${esc(v)}</span></div>`;
+  shell(`<h1>Profile</h1><span class="badge ${isPrem()?'p':''}" style="margin:0 0 8px;background:${isPrem()?'':'var(--card2)'};color:${isPrem()?'':'var(--text)'}">${planName()}</span>
+  <p class="st">Your details</p>${R('Full name',p.name)}${R('Class',p.cls)}${R('Section',p.section)}${R('School',p.school)}${R('Date of birth',p.dob)}${R('Age',p.age)}${R('Email',p.email)}${R('Monthly update','Sep 2026')}
+  <p class="st">${isPrem()?'Your subscription':'Upgrade your plan'}</p>
+  <p class="hint" style="margin:0 0 12px">${leftTxt()}</p>
+  ${payCards()}
+  <button class="btn g" style="margin-top:22px" onclick="signOut()">Sign out</button>`);
 }
-window.signOut = function(){
-  localStorage.removeItem(STORE_KEY);
-  state.profile = null; state.screen = 'home'; state.quiz = null;
-  render();
-};
+function signOut(){stopCam();ls.del(K.p);S.profile=null;S.step=0;S.screen='home';S.quiz=null;S.scan=null;S.qs=null;render()}
 
 function render(){
-  if(!state.profile){ renderOnboarding(); return; }
-  if(state.screen==='focus') renderFocus();
-  else if(state.screen==='quiz') renderQuiz();
-  else if(state.screen==='profile') renderProfile();
-  else renderHome();
+  if(!S.profile)return onboarding();
+  ({focus:focusView,quiz,profile,plans,ask}[S.screen]||home)();
 }
 render();
 </script>
