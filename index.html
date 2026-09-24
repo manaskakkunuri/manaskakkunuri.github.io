@@ -81,10 +81,13 @@ nav{position:fixed;bottom:0;left:0;right:0;z-index:5;background:var(--card);bord
 <body>
 <div id="app"></div>
 <script>
-const K={p:'ultron_profile_v2',th:'ultron_theme_v1',pl:'ultron_plan_v1',st:'ultron_streak_v1',sc:'ultron_lastscore_v1',hist:'ultron_paidhist_v1',ch:'ultron_chats_v1'};
+const K={p:'ultron_profile_v2',th:'ultron_theme_v1',pl:'ultron_plan_v1',st:'ultron_streak_v1',sc:'ultron_lastscore_v1',hist:'ultron_paidhist_v1',ch:'ultron_chats_v1',pend:'ultron_pending_v1'};
 const ls={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
 const PREMIUM_EMAILS=['bharadwajashok289@gmail.com','manaskakkunuri55@gmail.com'];
-const UPI='8074294488-1@fam';
+const ADMIN_EMAIL='manaskakkunuri55@gmail.com';
+const UPI='8074298844-@fam';
+const EMAIL_RE=/^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,24}$/;
+const validEmail=e=>EMAIL_RE.test(String(e||'').trim());
 const PLANS={
  free:{name:'Free',first:0,then:0,f:['50 chats per day','Focus Mode scanning','1 quiz set']},
  basic:{name:'Basic',first:99,then:199,f:['200 chats per day','Unlimited scans','Advanced quiz sets']},
@@ -143,6 +146,32 @@ function go(s){stopCam();if(s!=='plans')S.offer=false;S.screen=s;render();window
 function payUPI(t){const p=PLANS[t];location.href=`upi://pay?pa=${encodeURIComponent(UPI)}&pn=Ultron&am=${price(t)}&cu=INR&tn=${encodeURIComponent('Ultron '+p.name+' subscription')}`}
 function markPaid(t){const h=ls.get(K.hist)||[];if(!h.includes(t))h.push(t);ls.set(K.hist,h);ls.set(K.pl,t);go('home')}
 
+/* Payment claims: a plan is never activated just by tapping a button.
+   The user must submit the UPI transaction reference (UTR); the claim sits
+   as "pending" until an admin approves it. NOTE: this file has no backend,
+   so a claim is only visible to an admin using the SAME browser/device the
+   claim was made on. A real cross-device admin review needs a server
+   (e.g. Firebase/Supabase) storing all users' claims centrally. */
+function myEmail(){return (S.profile.email||'').trim().toLowerCase()}
+function pendingClaims(){return ls.get(K.pend)||[]}
+function myPendingFor(t){return pendingClaims().find(c=>c.email===myEmail()&&c.plan===t&&c.status==='pending')}
+function claimPayment(t){
+  const utr=(prompt('Enter the UPI transaction reference (UTR/Ref No.) shown in your payment app after paying:')||'').trim();
+  if(!utr)return;
+  const claims=pendingClaims();
+  claims.push({id:Date.now()+'',email:myEmail(),name:S.profile.name,plan:t,amount:price(t),utr,status:'pending',ts:new Date().toISOString()});
+  ls.set(K.pend,claims);render();
+}
+function approveClaim(id){
+  const claims=pendingClaims();const c=claims.find(x=>x.id===id);if(!c)return;
+  c.status='approved';ls.set(K.pend,claims);
+  if(c.email===myEmail())markPaid(c.plan);else render();
+}
+function rejectClaim(id){
+  const claims=pendingClaims();const c=claims.find(x=>x.id===id);if(!c)return;
+  c.status='rejected';ls.set(K.pend,claims);render();
+}
+
 function topbar(){return `<header class="top"><div class="brand"><div class="mark">U</div>Ultron</div><button class="ib" onclick="theme()" aria-label="Toggle theme">${ic(document.documentElement.getAttribute('data-theme')==='light'?'moon':'sun')}</button></header>`}
 function tabs(){const T=[['home','Home','home'],['focus','Scan','cam'],['quiz','Quiz','quiz'],['profile','You','user']];
  return `<nav><div class="ti">${T.map(([id,l,i])=>`<button class="tb ${S.screen===id?'a':''}" onclick="go('${id}')">${ic(i)}${l}</button>`).join('')}</div></nav>`}
@@ -170,6 +199,7 @@ function onboarding(){
    <div class="f"><label>School name</label><input required id="f_school" value="${esc(keep.school)}"></div>
    <div class="r2"><div class="f"><label>Date of birth</label><input required type="date" id="f_dob" value="${esc(keep.dob)}"></div><div class="f"><label>Age</label><input required type="number" min="3" max="25" id="f_age" value="${esc(keep.age)}"></div></div>
    <div class="f"><label>Email ID</label><input required type="email" id="f_email" autocomplete="email" value="${esc(keep.email)}"></div>
+   <div id="onbErr" class="err" role="alert" style="display:none"></div>
    <p class="hint" style="margin:0 0 4px">Selected plan: <b style="color:var(--text)">${PLANS[S.pick].name}</b></p>
    <button class="btn" type="submit">${S.pick==='free'?'Get started':'Continue to payment'}</button>
    <button class="btn g" type="button" onclick="S.step=0;render()">Change plan</button>
@@ -178,7 +208,10 @@ function onboarding(){
 }
 function submitOnb(e){
   e.preventDefault();const v=id=>document.getElementById('f_'+id).value.trim();
-  S.profile={name:v('name'),cls:v('class'),section:v('section'),school:v('school'),dob:v('dob'),age:v('age'),email:v('email')};
+  const email=v('email'),errEl=document.getElementById('onbErr');
+  if(!validEmail(email)){errEl.textContent='Enter a valid email address (e.g. name@example.com) — no spaces, and a "." after the @.';errEl.style.display='block';document.getElementById('f_email').focus();return}
+  errEl.style.display='none';
+  S.profile={name:v('name'),cls:v('class'),section:v('section'),school:v('school'),dob:v('dob'),age:v('age'),email};
   ls.set(K.p,S.profile);
   if(S.pick==='free')ls.del(K.pl);
   S.streak=streak();S.screen=S.pick==='free'?'home':'plans';S.offer=S.pick!=='free';render();
@@ -261,9 +294,9 @@ function payCards(){
    <span class="chk">${ic('check')}</span><div class="pn">${p.name}</div>${paidBefore(id)?`<div class="pp">₹${p.then}<small> per month · regular price</small></div>`:`<div class="pp">₹${p.first}<small> first month, then ₹${p.then}/month</small></div><span class="offer">First-time offer</span>`}
    <ul>${p.f.map(x=>`<li>${x}</li>`).join('')}</ul>
    <button class="btn" onclick="payUPI('${id}')">Pay via UPI — ₹${price(id)}</button>
-   <button class="btn g" onclick="markPaid('${id}')">I've completed payment</button></div>`).join('')
+   ${myPendingFor(id)?`<div class="hint" style="color:var(--accent);font-weight:700">Verification pending — your plan activates once an admin confirms the payment.</div>`:`<button class="btn g" onclick="claimPayment('${id}')">I've completed payment</button>`}</div>`).join('')
   +(cur!=='free'&&!vip?`<button class="btn g" onclick="ls.del(K.pl);go('profile')">Switch to Free</button>`:'')
-  +`<p class="fine">Payment opens your UPI app with the amount pre-filled. The first-time price applies to your first month on each plan; renewals are at the regular price. This demo can't verify payment automatically — a real launch needs a payment gateway (e.g. Razorpay) with server-side verification. On Google Play, in-app subscriptions must use Google Play Billing instead of UPI links.</p>`;
+  +`<p class="fine">Payment opens your UPI app with the amount pre-filled. The first-time price applies to your first month on each plan; renewals are at the regular price. "I've completed payment" no longer activates your plan instantly — it records your UTR as a pending claim that an admin must approve first. This still isn't real verification: a genuine launch needs a payment gateway (e.g. Razorpay) with server-side signature verification, plus a real backend so claims and approvals work across everyone's devices. On Google Play, in-app subscriptions must use Google Play Billing instead of UPI links.</p>`;
 }
 function plans(){
   shell(`<h1>Complete your plan</h1><p class="sub">Pay to unlock your plan. You can also upgrade later from Profile.</p>
@@ -291,6 +324,14 @@ function quiz(){
 function ans(i){const q=S.quiz,s=QUIZ[q.set];q.pick=i;if(i===s.qs[q.i].c)q.score++;render()}
 function nextQ(){const q=S.quiz,s=QUIZ[q.set];q.i++;q.pick=null;if(q.i>=s.qs.length){q.done=true;ls.set(K.sc,{score:q.score,total:s.qs.length,topic:s.topic})}render()}
 
+function adminPanel(){
+  if(myEmail()!==ADMIN_EMAIL)return '';
+  const claims=pendingClaims().filter(c=>c.status==='pending');
+  return `<p class="st">Admin — pending payment claims</p>
+  <p class="hint" style="margin:0 0 12px">This only lists claims submitted from this same browser/device — there's no shared server yet, so it can't see claims other people made on their own phones. To review and approve every user's claim from one place, this needs a real backend (e.g. Firebase/Supabase) with a proper user database, not just localStorage.</p>
+  ${claims.length?claims.map(c=>`<div class="act" style="margin-bottom:10px;flex-wrap:wrap;gap:8px"><div><b>${esc(c.name||c.email)}</b><small>${esc(c.email)} · ${esc(PLANS[c.plan].name)} · ₹${c.amount} · UTR ${esc(c.utr)}</small></div><div style="display:flex;gap:8px"><button class="btn" style="width:auto;margin:0;padding:10px 14px" onclick="approveClaim('${c.id}')">Approve</button><button class="btn g" style="width:auto;margin:0;padding:10px 14px" onclick="rejectClaim('${c.id}')">Reject</button></div></div>`).join(''):'<p class="hint">No pending claims on this device.</p>'}`;
+}
+
 /* ---------- Profile ---------- */
 function profile(){
   const p=S.profile,R=(l,v)=>`<div class="row"><span class="l">${l}</span><span class="v">${esc(v)}</span></div>`;
@@ -299,6 +340,7 @@ function profile(){
   <p class="st">${isPrem()?'Your subscription':'Upgrade your plan'}</p>
   <p class="hint" style="margin:0 0 12px">${leftTxt()}</p>
   ${payCards()}
+  ${adminPanel()}
   <button class="btn g" style="margin-top:22px" onclick="signOut()">Sign out</button>`);
 }
 function signOut(){stopCam();ls.del(K.p);S.profile=null;S.step=0;S.screen='home';S.quiz=null;S.scan=null;S.qs=null;render()}
