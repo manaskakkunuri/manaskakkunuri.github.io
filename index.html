@@ -2,260 +2,3692 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ultron — Study Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#635BFF">
+<title>Ultron — Study Smarter</title>
+
 <style>
-:root{--bg:#f7f7fb;--panel:#fff;--text:#1a1a2e;--muted:#6b6b80;--accent:#6c5ce7;--border:#e3e3ef;--danger:#e74c3c;}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12121c;--panel:#1c1c2b;--text:#eaeaf5;--muted:#9a9ab0;--accent:#8b7cf6;--border:#2c2c40;}}
-:root[data-theme="dark"]{--bg:#12121c;--panel:#1c1c2b;--text:#eaeaf5;--muted:#9a9ab0;--accent:#8b7cf6;--border:#2c2c40;}
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
-header{position:sticky;top:0;padding:14px 16px calc(14px + env(safe-area-inset-top,0px));background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;z-index:5;gap:8px;}
-header h1{font-size:18px;margin:0;}
-header .ctrls{display:flex;gap:6px;align-items:center;}
-select,input,textarea{font-family:inherit;}
-nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;}
-nav button{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:20px;font-size:13px;cursor:pointer;}
-nav button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
-main{max-width:640px;margin:0 auto;padding:8px 16px 40px;}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;}
-textarea{min-height:80px;resize:vertical;}
-button.primary{background:var(--accent);color:#fff;border:none;padding:11px 16px;border-radius:9px;font-size:14px;cursor:pointer;margin-top:12px;width:100%;}
-button.primary:disabled{opacity:.5;cursor:default;}
-button.ghost{background:none;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;}
-.plan{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
-.plan.current{border-color:var(--accent);}
-.plan h3{margin:0 0 4px;}
-.price{color:var(--accent);font-weight:600;}
-.muted{color:var(--muted);font-size:13px;}
-.result{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;font-size:14px;}
-.timer{font-size:56px;text-align:center;margin:20px 0;font-variant-numeric:tabular-nums;}
-.row{display:flex;gap:8px;}
-.row button{flex:1;}
-.flag{color:var(--danger);font-size:13px;margin-top:8px;}
-</style>
-</head>
-<body>
-<header>
-  <h1>🧠 Ultron</h1>
-  <div class="ctrls">
-    <select id="langSel" onchange="setLang(this.value)"><option value="en">EN</option><option value="hi">हिं</option></select>
-    <button class="ghost" id="themeBtn">🌓</button>
-  </div>
-</header>
-<div id="app"></div>
-<script>
-const TIERS = {
-  FREE:{chats:50, images:10, capacity:35, first:0, renew:0},
-  BASIC:{chats:200, images:60, capacity:60, first:99, renew:199},
-  PRO:{chats:Infinity, images:Infinity, capacity:100, first:299, renew:399}
-};
-const STR = {
-  en:{helper:'AI Helper',pomodoro:'Pomodoro',plans:'Plans',logout:'Log out',ask:'Ask Ultron',mode:'Mode',
-      doubt:'Ask a doubt',homework:'Homework assist',flash:'Flashcards from a syllabus photo'},
-  hi:{helper:'एआई सहायक',pomodoro:'पोमोडोरो',plans:'योजनाएँ',logout:'लॉग आउट',ask:'Ultron से पूछें',mode:'मोड',
-      doubt:'संदेह पूछें',homework:'होमवर्क सहायता',flash:'सिलेबस फोटो से फ्लैशकार्ड'}
-};
-function L(){ return localStorage.getItem('ultron_lang')||'en'; }
-function setLang(l){ localStorage.setItem('ultron_lang', l); render(); }
-
-function getUser(){ return JSON.parse(localStorage.getItem('ultron_user')||'null'); }
-function getTier(){ return localStorage.getItem('ultron_tier')||'FREE'; }
-function setTier(t){ localStorage.setItem('ultron_tier', t); }
-function getUsage(){
-  let u = JSON.parse(localStorage.getItem('ultron_usage')||'null');
-  const m = new Date().getMonth();
-  if(!u || u.month !== m){ u = {month:m, chats:0, images:0}; localStorage.setItem('ultron_usage', JSON.stringify(u)); }
-  return u;
-}
-function saveUsage(u){ localStorage.setItem('ultron_usage', JSON.stringify(u)); }
-function usageLine(){
-  const t=getTier(), u=getUsage();
-  const cl = TIERS[t].chats===Infinity?'∞':Math.max(0,TIERS[t].chats-u.chats);
-  const il = TIERS[t].images===Infinity?'∞':Math.max(0,TIERS[t].images-u.images);
-  return 'Plan: '+t+' · Chats left: '+cl+' · Images left: '+il;
-}
-function lockoutRemaining(){
-  const end = parseInt(localStorage.getItem('ultron_lockout')||'0',10);
-  return Math.max(0, Math.ceil((end-Date.now())/1000));
-}
-function setLockout(){ localStorage.setItem('ultron_lockout', String(Date.now()+5*60*1000)); }
-function escapeHtml(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
-function val(id){ return document.getElementById(id).value.trim(); }
-
-let view = getUser() ? 'helper' : 'signup';
-function render(){
-  const app = document.getElementById('app');
-  document.getElementById('langSel').value = L();
-  if(!getUser()){ app.innerHTML = viewSignup(); return; }
-  if(view==='pomodoro') app.innerHTML = viewPomodoro();
-  else if(view==='plans') app.innerHTML = viewPlans();
-  else app.innerHTML = viewHelper();
-}
-function go(v){ view=v; render(); }
-function logout(){ localStorage.removeItem('ultron_user'); view='signup'; render(); }
-
-function shell(active, inner){
-  const s = STR[L()];
-  const tabs = [['helper',s.helper],['pomodoro',s.pomodoro],['plans',s.plans]];
-  let nav = '<nav>' + tabs.map(([k,l])=>'<button class="'+(k===active?'active':'')+'" onclick="go(\''+k+'\')">'+l+'</button>').join('') +
-    '<button onclick="logout()">'+s.logout+'</button></nav>';
-  return nav + '<main>' + inner + '</main>';
+:root{
+  --bg:#f5f6fb;
+  --card:#ffffff;
+  --card2:#f8f9fd;
+  --text:#151827;
+  --muted:#747b8d;
+  --border:#e5e7ef;
+  --primary:#635bff;
+  --primary2:#8b5cf6;
+  --soft:#eeecff;
+  --danger:#ef4444;
+  --shadow:0 20px 60px rgba(30,35,90,.10);
 }
 
-function viewSignup(){
-  return '<main><div class="card"><h2>Create your profile</h2>' +
-    '<label>Full name</label><input id="f_name">' +
-    '<label>Class</label><input id="f_class" placeholder="e.g. 10th">' +
-    '<label>Section</label><input id="f_section" placeholder="e.g. A">' +
-    '<label>School name</label><input id="f_school">' +
-    '<label>Date of birth</label><input id="f_dob" type="date">' +
-    '<label>Age</label><input id="f_age" type="number" min="5" max="25">' +
-    '<label>Email</label><input id="f_email" type="email">' +
-    '<button class="primary" onclick="submitSignup()">Get started</button></div></main>';
-}
-function submitSignup(){
-  const u = {fullName:val('f_name'), schoolClass:val('f_class'), section:val('f_section'),
-    schoolName:val('f_school'), dob:val('f_dob'), age:val('f_age'), email:val('f_email')};
-  if(!u.fullName || !u.email){ alert('Please fill in your name and email.'); return; }
-  localStorage.setItem('ultron_user', JSON.stringify(u));
-  view='helper'; render();
+[data-theme="dark"]{
+  --bg:#090b11;
+  --card:#11151e;
+  --card2:#171b25;
+  --text:#f5f7ff;
+  --muted:#9ca5b8;
+  --border:#282e3b;
+  --primary:#8178ff;
+  --primary2:#a78bfa;
+  --soft:#252344;
+  --shadow:0 20px 70px rgba(0,0,0,.4);
 }
 
-let lockTicker = null;
-function ensureLockTicker(){
-  if(lockTicker) return;
-  lockTicker = setInterval(()=>{
-    if(view==='helper'){
-      if(lockoutRemaining() > 0){ render(); } else { clearInterval(lockTicker); lockTicker=null; render(); }
-    } else { clearInterval(lockTicker); lockTicker=null; }
-  }, 1000);
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
-function viewHelper(){
-  const s = STR[L()];
-  const lockSec = lockoutRemaining();
-  if(lockSec>0) ensureLockTicker();
-  return shell('helper',
-    '<div class="card">' +
-    '<div class="muted" id="h_usage">'+usageLine()+'</div>' +
-    '<label>'+s.mode+'</label>' +
-    '<select id="h_mode"><option value="doubt">'+s.doubt+'</option><option value="homework">'+s.homework+'</option><option value="flashcards">'+s.flash+'</option></select>' +
-    '<label>Type your question (optional for homework/flashcards)</label>' +
-    '<textarea id="h_text" placeholder="Type your doubt here..."></textarea>' +
-    '<label>Or attach a photo</label>' +
-    '<input type="file" id="h_file" accept="image/*">' +
-    (lockSec>0 ? '<div class="flag">Doubts mode is locked for '+lockSec+'s due to flagged content.</div>' : '') +
-    '<button class="primary" id="h_btn" onclick="askHelper()" '+(lockSec>0?'disabled':'')+'>'+s.ask+'</button>' +
-    '<div id="h_result"></div></div>'
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  min-height:100vh;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(99,91,255,.13),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 100% 10%,
+      rgba(139,92,246,.10),
+      transparent 25%
+    ),
+    var(--bg);
+}
+
+button,
+input,
+textarea,
+select{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none!important;
+}
+
+.container{
+  width:min(1180px,calc(100% - 30px));
+  margin:auto;
+}
+
+/* =========================================================
+   LOGIN HUB
+========================================================= */
+
+.login-screen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.login-layout{
+  width:min(1080px,100%);
+  min-height:650px;
+  display:grid;
+  grid-template-columns:1.05fr .95fr;
+  overflow:hidden;
+  border:1px solid var(--border);
+  border-radius:32px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+}
+
+/* LEFT SIDE — ONLY BRAND MESSAGE */
+
+.login-showcase{
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  padding:60px;
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb,var(--primary) 12%,var(--card)),
+      var(--card)
+    );
+}
+
+.login-showcase::before{
+  content:"";
+  position:absolute;
+  width:500px;
+  height:500px;
+  border-radius:50%;
+  right:-220px;
+  top:-220px;
+  background:radial-gradient(
+    circle,
+    rgba(99,91,255,.30),
+    transparent 68%
   );
 }
-function setResult(t){ document.getElementById('h_result').innerHTML = t ? ('<div class="result">'+escapeHtml(t)+'</div>') : ''; }
 
-async function askHelper(){
-  const mode = document.getElementById('h_mode').value;
-  const text = document.getElementById('h_text').value.trim();
-  const file = document.getElementById('h_file').files[0];
-  const t = getTier(), u = getUsage();
-  if(u.chats >= TIERS[t].chats){ setResult('You have used all your chats for this plan this month.'); return; }
-  if(file && u.images >= TIERS[t].images){ setResult('You have used all your image submissions for this plan this month.'); return; }
-  const btn = document.getElementById('h_btn');
-  btn.disabled = true; setResult('Thinking...');
-  try{
-    const sample = await claude.use('sample');
-    if(!sample){ setResult('AI features are not available in this view.'); btn.disabled=false; return; }
-    let images = [];
-    if(file){ const limits = await sample.limits(); if(limits.images) images = [file]; }
-    if(mode==='doubt'){
-      const data = await sample.json(
-        'You are a friendly study tutor for a school student. The student asks: "'+(text||'(see attached image)')+
-        '". If this is a genuine study doubt, answer it clearly for their level. If it asks for anything unsafe, ' +
-        'explicit, or unrelated to studies that should not be answered, set flagged true and leave answer empty. ' +
-        'Reply with ONLY JSON: {"flagged": boolean, "answer": string}',
-        {images, modelTier:'quick'}
-      );
-      if(data.flagged){ setLockout(); render(); return; }
-      setResult(data.answer);
-    } else if(mode==='homework'){
-      const r = await sample('You are a patient tutor. Solve this homework step by step so the student learns the method, not just the final answer:\n'+(text||'(see attached photo of the homework)'), {images});
-      setResult(r.text);
-    } else {
-      const data = await sample.json(
-        'From this syllabus/textbook content, generate 6 flashcard-style quiz questions with short answers, based on: '+
-        (text||'(see attached photo)')+'. Reply with ONLY a JSON array of {"question":string,"answer":string}.', {images}
-      );
-      setResult(data.map((c,i)=>(i+1)+'. '+c.question+'\n   → '+c.answer).join('\n\n'));
-    }
-    u.chats++; if(file) u.images++; saveUsage(u);
-    document.getElementById('h_usage').textContent = usageLine();
-  }catch(e){
-    setResult(e.code==='not_granted' ? 'Please allow Ultron to use Claude to enable this feature.' : 'Something went wrong ('+e.code+'). Try again.');
+.login-showcase::after{
+  content:"";
+  position:absolute;
+  width:380px;
+  height:380px;
+  border-radius:50%;
+  left:-220px;
+  bottom:-220px;
+  background:radial-gradient(
+    circle,
+    rgba(139,92,246,.20),
+    transparent 68%
+  );
+}
+
+.login-showcase-content{
+  position:relative;
+  z-index:2;
+}
+
+.logo-big{
+  width:66px;
+  height:66px;
+  display:grid;
+  place-items:center;
+  border-radius:20px;
+  color:white;
+  font-size:31px;
+  font-weight:950;
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      var(--primary2)
+    );
+  box-shadow:
+    0 18px 40px rgba(99,91,255,.30);
+}
+
+.login-showcase h1{
+  margin-top:34px;
+  font-size:clamp(45px,5vw,70px);
+  line-height:.96;
+  letter-spacing:-4px;
+}
+
+.gradient{
+  background:
+    linear-gradient(
+      90deg,
+      var(--primary),
+      var(--primary2)
+    );
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* =========================================================
+   AUTH PANEL
+========================================================= */
+
+.login-panel{
+  padding:45px;
+  display:flex;
+  align-items:center;
+}
+
+.auth-box{
+  width:100%;
+  max-width:400px;
+  margin:auto;
+}
+
+.auth-box h2{
+  font-size:31px;
+  letter-spacing:-1.2px;
+}
+
+.auth-subtitle{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.55;
+  margin-top:7px;
+  margin-bottom:23px;
+}
+
+.auth-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+  padding:4px;
+  margin-bottom:21px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:var(--card2);
+}
+
+.auth-tabs button{
+  border:0;
+  border-radius:10px;
+  padding:10px;
+  color:var(--muted);
+  background:transparent;
+  font-weight:800;
+}
+
+.auth-tabs button.active{
+  color:var(--text);
+  background:var(--card);
+  box-shadow:0 4px 14px rgba(0,0,0,.06);
+}
+
+.form{
+  display:grid;
+  gap:13px;
+}
+
+.field label{
+  display:block;
+  margin-bottom:7px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:850;
+}
+
+.input,
+.select,
+.textarea{
+  width:100%;
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:13px;
+  outline:none;
+  color:var(--text);
+  background:var(--card2);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus{
+  border-color:var(--primary);
+  box-shadow:
+    0 0 0 3px
+    color-mix(
+      in srgb,
+      var(--primary) 13%,
+      transparent
+    );
+}
+
+.form-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:11px;
+}
+
+.primary-btn{
+  border:0;
+  border-radius:13px;
+  padding:13px 17px;
+  color:#fff;
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      var(--primary2)
+    );
+  font-weight:850;
+  box-shadow:
+    0 10px 25px rgba(99,91,255,.22);
+  transition:.2s;
+}
+
+.primary-btn:hover{
+  transform:translateY(-1px);
+}
+
+.primary-btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.secondary-btn{
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:12px 16px;
+  color:var(--text);
+  background:var(--card);
+  font-weight:800;
+}
+
+.auth-note{
+  margin-top:17px;
+  color:var(--muted);
+  text-align:center;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  border-bottom:1px solid var(--border);
+  background:
+    color-mix(
+      in srgb,
+      var(--bg) 84%,
+      transparent
+    );
+  backdrop-filter:blur(20px);
+}
+
+.header-inner{
+  min-height:72px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:20px;
+  font-weight:950;
+}
+
+.small-logo{
+  width:41px;
+  height:41px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  color:#fff;
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      var(--primary2)
+    );
+}
+
+.nav{
+  display:flex;
+  gap:4px;
+}
+
+.nav button{
+  border:0;
+  border-radius:11px;
+  padding:10px 12px;
+  color:var(--muted);
+  background:transparent;
+  font-weight:750;
+}
+
+.nav button:hover,
+.nav button.active{
+  color:var(--text);
+  background:var(--card);
+}
+
+.header-actions{
+  display:flex;
+  gap:7px;
+}
+
+.icon-btn{
+  width:41px;
+  height:41px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  background:var(--card);
+}
+
+/* =========================================================
+   MAIN
+========================================================= */
+
+main{
+  padding:35px 0 80px;
+}
+
+.page{
+  display:none;
+}
+
+.page.active{
+  display:block;
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:45px;
+  border:1px solid var(--border);
+  border-radius:30px;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(
+        in srgb,
+        var(--primary) 12%,
+        var(--card)
+      ),
+      var(--card)
+    );
+  box-shadow:var(--shadow);
+}
+
+.badge{
+  display:inline-block;
+  padding:7px 11px;
+  border-radius:999px;
+  color:var(--primary);
+  background:var(--soft);
+  font-size:11px;
+  font-weight:900;
+  margin-bottom:15px;
+}
+
+.hero h1{
+  max-width:800px;
+  font-size:clamp(38px,5vw,60px);
+  line-height:1;
+  letter-spacing:-3px;
+}
+
+.hero p{
+  max-width:650px;
+  margin-top:17px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  margin-top:23px;
+}
+
+.section{
+  margin-top:28px;
+}
+
+.section-head{
+  margin-bottom:14px;
+}
+
+.section-head h2{
+  font-size:23px;
+  letter-spacing:-.7px;
+}
+
+.section-head p{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+.grid{
+  display:grid;
+  gap:15px;
+}
+
+.grid-2{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.grid-3{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+
+.grid-4{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+
+.card{
+  padding:20px;
+  border:1px solid var(--border);
+  border-radius:21px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+}
+
+.card h3{
+  margin-bottom:6px;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.action{
+  padding:19px;
+  border:1px solid var(--border);
+  border-radius:19px;
+  color:var(--text);
+  text-align:left;
+  background:var(--card);
+  transition:.2s;
+}
+
+.action:hover{
+  transform:translateY(-3px);
+  border-color:var(--primary);
+  box-shadow:var(--shadow);
+}
+
+.action-icon{
+  width:43px;
+  height:43px;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  color:var(--primary);
+  background:var(--soft);
+  margin-bottom:13px;
+}
+
+.action p{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stat{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+}
+
+.stat-number{
+  font-size:30px;
+  font-weight:950;
+}
+
+.progress{
+  height:8px;
+  overflow:hidden;
+  margin-top:13px;
+  border-radius:999px;
+  background:var(--border);
+}
+
+.progress span{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--primary),
+      var(--primary2)
+    );
+}
+
+/* =========================================================
+   AI / STUDY
+========================================================= */
+
+.ai-layout{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:15px;
+}
+
+.mode-list{
+  display:grid;
+  gap:7px;
+}
+
+.mode-btn{
+  border:1px solid transparent;
+  border-radius:12px;
+  padding:12px;
+  color:var(--muted);
+  background:transparent;
+  text-align:left;
+  font-weight:800;
+}
+
+.mode-btn:hover,
+.mode-btn.active{
+  color:var(--primary);
+  background:var(--soft);
+}
+
+.textarea{
+  min-height:190px;
+  resize:vertical;
+}
+
+.ai-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:10px;
+}
+
+.ai-output{
+  min-height:180px;
+  overflow:auto;
+  margin-top:15px;
+  padding:17px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  color:var(--text);
+  background:var(--card2);
+  white-space:pre-wrap;
+  line-height:1.7;
+}
+
+.ai-empty{
+  display:grid;
+  place-items:center;
+  color:var(--muted);
+  text-align:center;
+}
+
+/* =========================================================
+   TASKS
+========================================================= */
+
+.task-form{
+  display:flex;
+  gap:9px;
+}
+
+.task-form .input{
+  flex:1;
+}
+
+.task-list{
+  display:grid;
+  gap:8px;
+  margin-top:15px;
+}
+
+.task{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:11px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--card2);
+}
+
+.task input{
+  width:18px;
+  height:18px;
+  accent-color:var(--primary);
+}
+
+.task-title{
+  flex:1;
+}
+
+.task-title.done{
+  color:var(--muted);
+  text-decoration:line-through;
+}
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+.timer{
+  text-align:center;
+}
+
+.timer-mode{
+  color:var(--primary);
+  font-size:12px;
+  font-weight:900;
+}
+
+.timer-display{
+  margin:8px 0 15px;
+  font-size:72px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-5px;
+}
+
+.timer-buttons{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+.profile{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.avatar{
+  width:62px;
+  height:62px;
+  display:grid;
+  place-items:center;
+  flex:none;
+  border-radius:19px;
+  color:#fff;
+  background:
+    linear-gradient(
+      135deg,
+      var(--primary),
+      var(--primary2)
+    );
+  font-size:24px;
+  font-weight:950;
+}
+
+.profile-name{
+  font-size:20px;
+  font-weight:900;
+}
+
+.profile-info{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:13px;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  z-index:9999;
+  padding:12px 17px;
+  border-radius:13px;
+  color:#fff;
+  background:#151827;
+  font-size:13px;
+  font-weight:750;
+  opacity:0;
+  pointer-events:none;
+  transform:translate(-50%,20px);
+  transition:.25s;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:900px){
+
+  .login-layout{
+    grid-template-columns:1fr;
   }
-  btn.disabled = false;
+
+  .login-showcase{
+    min-height:330px;
+    padding:45px;
+  }
+
+  .nav{
+    display:none;
+  }
+
+  .grid-4{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .ai-layout{
+    grid-template-columns:1fr;
+  }
 }
 
-function viewPlans(){
-  const t = getTier();
-  const cards = Object.keys(TIERS).map(key=>{
-    const p = TIERS[key];
-    const price = p.first===0 ? 'Free' : ('₹'+p.first+' first month, then ₹'+p.renew+'/mo');
-    const chats = p.chats===Infinity ? 'Unlimited' : p.chats;
-    const imgs = p.images===Infinity ? 'Unlimited' : p.images;
-    return '<div class="plan '+(key===t?'current':'')+'"><h3>'+key+(key===t?' (current)':'')+'</h3>' +
-      '<div class="price">'+price+'</div>' +
-      '<div class="muted">'+chats+' chats/mo · '+imgs+' images/mo · '+p.capacity+'% AI capacity</div>' +
-      (key!==t ? '<button class="ghost" style="margin-top:8px" onclick="choosePlan(\''+key+'\')">'+(p.first===0?'Switch to Free':'Pay & switch')+'</button>' : '') +
-      '</div>';
-  }).join('');
-  return shell('plans', '<div class="card"><h2>Plans</h2>'+cards+
-    '<p class="muted">After paying, your plan is activated manually by the Ultron team — this can take a little while.</p></div>');
-}
-function choosePlan(key){
-  const p = TIERS[key];
-  if(p.first===0){ setTier('FREE'); render(); return; }
-  const uri = 'upi://pay?pa=shreetulasi%40oksbi&pn=Ultron&tn=Ultron%20'+key+'%20subscription&am='+p.first+'&cu=INR';
-  window.location.href = uri;
-  alert('If your UPI app opened, complete the payment there. Your '+key+' plan will be activated once the team verifies it.');
+@media(max-width:600px){
+
+  .container{
+    width:calc(100% - 20px);
+  }
+
+  .login-screen{
+    padding:10px;
+  }
+
+  .login-showcase{
+    min-height:300px;
+    padding:32px 25px;
+    align-items:flex-start;
+  }
+
+  .login-panel{
+    padding:30px 22px;
+  }
+
+  .login-showcase h1{
+    font-size:44px;
+  }
+
+  .hero{
+    padding:30px 22px;
+    border-radius:23px;
+  }
+
+  .hero h1{
+    font-size:39px;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    padding:17px;
+    border-radius:18px;
+  }
+
+  .task-form{
+    flex-direction:column;
+  }
+
+  .timer-display{
+    font-size:58px;
+  }
 }
 
-let pomState = {phase:'Focus', secondsLeft:25*60, running:false, timerId:null, cycle:0};
-function fmt(s){ const m=Math.floor(s/60), ss=s%60; return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
-function viewPomodoro(){
-  return shell('pomodoro', '<div class="card"><h2 style="text-align:center">'+pomState.phase+'</h2>' +
-    '<div class="timer" id="pomDisplay">'+fmt(pomState.secondsLeft)+'</div>' +
-    '<div class="row"><button class="primary" onclick="pomToggle()">'+(pomState.running?'Pause':'Start')+'</button>' +
-    '<button class="ghost" onclick="pomReset()">Reset</button></div></div>');
-}
-function pomToggle(){
-  pomState.running = !pomState.running;
-  if(pomState.running){
-    pomState.timerId = setInterval(()=>{
-      pomState.secondsLeft--;
-      if(pomState.secondsLeft<=0){ pomAdvance(); }
-      const d=document.getElementById('pomDisplay'); if(d) d.textContent=fmt(pomState.secondsLeft);
-    },1000);
-  } else { clearInterval(pomState.timerId); }
-  render();
-}
-function pomAdvance(){
-  if(pomState.phase==='Focus'){
-    pomState.cycle++;
-    pomState.phase = (pomState.cycle%4===0) ? 'Long Break' : 'Short Break';
-    pomState.secondsLeft = (pomState.phase==='Long Break') ? 15*60 : 5*60;
-  } else { pomState.phase='Focus'; pomState.secondsLeft=25*60; }
-  render();
-}
-function pomReset(){ clearInterval(pomState.timerId); pomState={phase:'Focus',secondsLeft:25*60,running:false,timerId:null,cycle:0}; render(); }
+@media(max-width:390px){
 
-(function(){ const saved=localStorage.getItem('ultron_theme'); if(saved) document.documentElement.setAttribute('data-theme', saved); })();
-document.getElementById('themeBtn').onclick = () => {
-  const html=document.documentElement;
-  const next = html.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', next);
-  localStorage.setItem('ultron_theme', next);
+  .form-row{
+    grid-template-columns:1fr;
+  }
+
+  .login-showcase h1{
+    font-size:38px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ======================================================
+     LOGIN HUB
+====================================================== -->
+
+<section id="loginScreen" class="login-screen">
+
+  <div class="login-layout">
+
+    <!-- CLEAN BRAND SIDE -->
+
+    <div class="login-showcase">
+
+      <div class="login-showcase-content">
+
+        <div class="logo-big">U</div>
+
+        <h1>
+          Study smarter.<br>
+          <span class="gradient">Go further.</span>
+        </h1>
+
+      </div>
+
+    </div>
+
+
+    <!-- LOGIN SIDE -->
+
+    <div class="login-panel">
+
+      <div class="auth-box">
+
+        <h2 id="authTitle">
+          Welcome back
+        </h2>
+
+        <p
+          id="authSubtitle"
+          class="auth-subtitle">
+          Sign in to continue to your Ultron dashboard.
+        </p>
+
+
+        <div class="auth-tabs">
+
+          <button
+            id="loginTab"
+            class="active"
+            type="button"
+            onclick="switchAuth('login')">
+            Login
+          </button>
+
+          <button
+            id="signupTab"
+            type="button"
+            onclick="switchAuth('signup')">
+            Create account
+          </button>
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <form
+          id="loginForm"
+          class="form">
+
+          <div class="field">
+
+            <label>Email</label>
+
+            <input
+              id="loginEmail"
+              class="input"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>Password</label>
+
+            <input
+              id="loginPassword"
+              class="input"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Your password"
+              required>
+
+          </div>
+
+
+          <button
+            id="loginButton"
+            class="primary-btn"
+            type="submit">
+            Login to Ultron →
+          </button>
+
+        </form>
+
+
+        <!-- SIGN UP -->
+
+        <form
+          id="signupForm"
+          class="form hidden">
+
+          <div class="field">
+
+            <label>Full name</label>
+
+            <input
+              id="signupName"
+              class="input"
+              autocomplete="name"
+              placeholder="Your name"
+              maxlength="60"
+              required>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>Email</label>
+
+            <input
+              id="signupEmail"
+              class="input"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+              required>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>Password</label>
+
+            <input
+              id="signupPassword"
+              class="input"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              placeholder="At least 6 characters"
+              required>
+
+          </div>
+
+
+          <!-- CLASS + ROLL NUMBER -->
+
+          <div class="form-row">
+
+            <div class="field">
+
+              <label>Class</label>
+
+              <input
+                id="signupClass"
+                class="input"
+                placeholder="e.g. 8th"
+                maxlength="20"
+                required>
+
+            </div>
+
+
+            <div class="field">
+
+              <label>Roll No.</label>
+
+              <input
+                id="signupRollNo"
+                class="input"
+                placeholder="e.g. 24"
+                inputmode="numeric"
+                maxlength="15"
+                required>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-row">
+
+            <div class="field">
+
+              <label>Section</label>
+
+              <input
+                id="signupSection"
+                class="input"
+                placeholder="e.g. A"
+                maxlength="10">
+
+            </div>
+
+
+            <div class="field">
+
+              <label>Favorite subject</label>
+
+              <select
+                id="signupSubject"
+                class="select">
+
+                <option value="">
+                  Choose
+                </option>
+
+                <option>
+                  Mathematics
+                </option>
+
+                <option>
+                  Science
+                </option>
+
+                <option>
+                  English
+                </option>
+
+                <option>
+                  Social Studies
+                </option>
+
+                <option>
+                  Computer Science
+                </option>
+
+                <option>
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <button
+            id="signupButton"
+            class="primary-btn"
+            type="submit">
+            Create account ✦
+          </button>
+
+        </form>
+
+
+        <div class="auth-note">
+          Your account is stored locally on this device.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     MAIN APP
+====================================================== -->
+
+<div id="app" class="hidden">
+
+<header class="header">
+
+  <div class="container header-inner">
+
+    <div class="brand">
+
+      <div class="small-logo">
+        U
+      </div>
+
+      <span>
+        Ultron
+      </span>
+
+    </div>
+
+
+    <nav class="nav">
+
+      <button
+        class="active"
+        onclick="showPage('home',this)">
+        Home
+      </button>
+
+      <button
+        onclick="showPage('tutor',this)">
+        Study
+      </button>
+
+      <button
+        onclick="showPage('tasks',this)">
+        Tasks
+      </button>
+
+      <button
+        onclick="showPage('focus',this)">
+        Focus
+      </button>
+
+      <button
+        onclick="showPage('profile',this)">
+        Profile
+      </button>
+
+    </nav>
+
+
+    <div class="header-actions">
+
+      <button
+        class="icon-btn"
+        onclick="toggleTheme()"
+        title="Theme">
+        ◐
+      </button>
+
+      <button
+        class="icon-btn"
+        onclick="showPage('profile')"
+        title="Profile">
+        ◎
+      </button>
+
+    </div>
+
+  </div>
+
+</header>
+
+
+<main>
+
+<div class="container">
+
+
+<!-- ======================================================
+     HOME
+====================================================== -->
+
+<section
+  id="page-home"
+  class="page active">
+
+  <div class="hero">
+
+    <div class="badge">
+      ✦ Your study space
+    </div>
+
+    <h1>
+      Welcome back,
+      <span
+        id="welcomeName"
+        class="gradient">
+        Student
+      </span>.
+    </h1>
+
+    <p>
+      Everything you need to organize your learning,
+      understand difficult topics and stay focused.
+    </p>
+
+    <div class="buttons">
+
+      <button
+        class="primary-btn"
+        onclick="openTutor()">
+        Start studying ✦
+      </button>
+
+      <button
+        class="secondary-btn"
+        onclick="showPage('focus')">
+        Start Focus
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="section">
+
+    <div class="section-head">
+
+      <h2>
+        Quick actions
+      </h2>
+
+      <p>
+        Jump straight into studying.
+      </p>
+
+    </div>
+
+
+    <div class="grid grid-4">
+
+      <button
+        class="action"
+        onclick="openTutorMode('doubt')">
+
+        <div class="action-icon">
+          ✦
+        </div>
+
+        <strong>
+          Ask a doubt
+        </strong>
+
+        <p>
+          Understand difficult concepts.
+        </p>
+
+      </button>
+
+
+      <button
+        class="action"
+        onclick="openTutorMode('homework')">
+
+        <div class="action-icon">
+          ⌁
+        </div>
+
+        <strong>
+          Homework
+        </strong>
+
+        <p>
+          Work through problems.
+        </p>
+
+      </button>
+
+
+      <button
+        class="action"
+        onclick="openTutorMode('flashcards')">
+
+        <div class="action-icon">
+          ▣
+        </div>
+
+        <strong>
+          Flashcards
+        </strong>
+
+        <p>
+          Revise important information.
+        </p>
+
+      </button>
+
+
+      <button
+        class="action"
+        onclick="showPage('focus')">
+
+        <div class="action-icon">
+          ◷
+        </div>
+
+        <strong>
+          Focus
+        </strong>
+
+        <p>
+          Start a Pomodoro session.
+        </p>
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div class="section">
+
+    <div class="grid grid-3">
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+
+            <div class="muted">
+              Completed tasks
+            </div>
+
+            <div
+              id="completedCount"
+              class="stat-number">
+              0
+            </div>
+
+          </div>
+
+          <div class="action-icon">
+            ✓
+          </div>
+
+        </div>
+
+        <div class="progress">
+
+          <span
+            id="taskProgress"
+            style="width:0%">
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+
+            <div class="muted">
+              Focus sessions
+            </div>
+
+            <div
+              id="focusCount"
+              class="stat-number">
+              0
+            </div>
+
+          </div>
+
+          <div class="action-icon">
+            ◷
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="stat">
+
+          <div>
+
+            <div class="muted">
+              Questions
+            </div>
+
+            <div
+              id="questionCount"
+              class="stat-number">
+              0
+            </div>
+
+          </div>
+
+          <div class="action-icon">
+            ?
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="section">
+
+    <div class="card">
+
+      <div class="profile">
+
+        <div
+          id="homeAvatar"
+          class="avatar">
+          U
+        </div>
+
+        <div style="flex:1">
+
+          <div
+            id="homeProfileName"
+            class="profile-name">
+            Student
+          </div>
+
+          <div
+            id="homeProfileInfo"
+            class="profile-info">
+            Student profile
+          </div>
+
+        </div>
+
+        <button
+          class="secondary-btn"
+          onclick="showPage('profile')">
+          Profile
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     STUDY
+====================================================== -->
+
+<section
+  id="page-tutor"
+  class="page">
+
+  <div class="section-head">
+
+    <h2>
+      Study
+    </h2>
+
+    <p>
+      Choose a study mode and enter what you need help with.
+    </p>
+
+  </div>
+
+
+  <div class="ai-layout">
+
+    <div class="card">
+
+      <h3>
+        Study mode
+      </h3>
+
+      <p
+        class="muted"
+        style="font-size:12px;margin-bottom:14px">
+        Choose how you want to study.
+      </p>
+
+
+      <div class="mode-list">
+
+        <button
+          class="mode-btn active"
+          data-mode="doubt"
+          onclick="setMode('doubt',this)">
+          ✦ Explain a doubt
+        </button>
+
+        <button
+          class="mode-btn"
+          data-mode="homework"
+          onclick="setMode('homework',this)">
+          ⌁ Homework help
+        </button>
+
+        <button
+          class="mode-btn"
+          data-mode="summary"
+          onclick="setMode('summary',this)">
+          ≡ Summarize
+        </button>
+
+        <button
+          class="mode-btn"
+          data-mode="flashcards"
+          onclick="setMode('flashcards',this)">
+          ▣ Flashcards
+        </button>
+
+        <button
+          class="mode-btn"
+          data-mode="quiz"
+          onclick="setMode('quiz',this)">
+          ? Create quiz
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <textarea
+        id="aiInput"
+        class="textarea"
+        placeholder="What do you want to study?"></textarea>
+
+
+      <div class="ai-toolbar">
+
+        <span
+          class="muted"
+          style="font-size:11px">
+          Ctrl + K
+        </span>
+
+        <button
+          id="askBtn"
+          class="primary-btn"
+          onclick="askAI()">
+          Continue ✦
+        </button>
+
+      </div>
+
+
+      <div
+        id="aiOutput"
+        class="ai-output ai-empty">
+
+        Your study response will appear here.
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     TASKS
+====================================================== -->
+
+<section
+  id="page-tasks"
+  class="page">
+
+  <div class="section-head">
+
+    <h2>
+      Tasks
+    </h2>
+
+    <p>
+      Keep track of homework and revision.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <div class="task-form">
+
+      <input
+        id="taskInput"
+        class="input"
+        placeholder="Add a study task..."
+        onkeydown="
+          if(event.key==='Enter') addTask()
+        ">
+
+      <button
+        class="primary-btn"
+        onclick="addTask()">
+        Add task
+      </button>
+
+    </div>
+
+
+    <div
+      id="taskList"
+      class="task-list">
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     FOCUS
+====================================================== -->
+
+<section
+  id="page-focus"
+  class="page">
+
+  <div class="section-head">
+
+    <h2>
+      Focus
+    </h2>
+
+    <p>
+      Use a simple Pomodoro timer to stay focused.
+    </p>
+
+  </div>
+
+
+  <div class="grid grid-2">
+
+    <div class="card">
+
+      <div class="timer">
+
+        <div
+          id="timerMode"
+          class="timer-mode">
+          FOCUS SESSION
+        </div>
+
+        <div
+          id="timerDisplay"
+          class="timer-display">
+          25:00
+        </div>
+
+
+        <div class="timer-buttons">
+
+          <button
+            id="timerBtn"
+            class="primary-btn"
+            onclick="toggleTimer()">
+            Start
+          </button>
+
+          <button
+            class="secondary-btn"
+            onclick="resetTimer()">
+            Reset
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        Focus statistics
+      </h3>
+
+      <p
+        class="muted"
+        style="font-size:13px;line-height:1.6">
+        Completed sessions are automatically
+        added to your study statistics.
+      </p>
+
+
+      <div style="margin-top:20px">
+
+        <div class="stat">
+
+          <span class="muted">
+            Completed sessions
+          </span>
+
+          <strong id="focusCount2">
+            0
+          </strong>
+
+        </div>
+
+
+        <div class="progress">
+
+          <span
+            id="focusProgress"
+            style="width:0%">
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================================
+     PROFILE
+====================================================== -->
+
+<section
+  id="page-profile"
+  class="page">
+
+  <div class="section-head">
+
+    <h2>
+      Profile
+    </h2>
+
+    <p>
+      Manage your student information.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <form
+      id="profileForm"
+      class="form">
+
+      <div class="form-row">
+
+        <div class="field">
+
+          <label>
+            Name
+          </label>
+
+          <input
+            id="profileName"
+            class="input"
+            required>
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Email
+          </label>
+
+          <input
+            id="profileEmail"
+            class="input"
+            type="email"
+            required>
+
+        </div>
+
+      </div>
+
+
+      <!-- CLASS + ROLL NUMBER -->
+
+      <div class="form-row">
+
+        <div class="field">
+
+          <label>
+            Class
+          </label>
+
+          <input
+            id="profileClass"
+            class="input"
+            placeholder="e.g. 8th">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Roll No.
+          </label>
+
+          <input
+            id="profileRollNo"
+            class="input"
+            placeholder="e.g. 24"
+            inputmode="numeric">
+
+        </div>
+
+      </div>
+
+
+      <div class="form-row">
+
+        <div class="field">
+
+          <label>
+            Section
+          </label>
+
+          <input
+            id="profileSection"
+            class="input"
+            placeholder="e.g. A">
+
+        </div>
+
+
+        <div class="field">
+
+          <label>
+            Favorite subject
+          </label>
+
+          <select
+            id="profileSubject"
+            class="select">
+
+            <option value="">
+              Select
+            </option>
+
+            <option>
+              Mathematics
+            </option>
+
+            <option>
+              Science
+            </option>
+
+            <option>
+              English
+            </option>
+
+            <option>
+              Social Studies
+            </option>
+
+            <option>
+              Computer Science
+            </option>
+
+            <option>
+              Other
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div
+        style="
+          display:flex;
+          gap:9px;
+          flex-wrap:wrap;
+        ">
+
+        <button
+          class="primary-btn"
+          type="submit">
+          Save profile
+        </button>
+
+        <button
+          class="secondary-btn"
+          type="button"
+          onclick="logout()">
+          Log out
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</section>
+
+
+</div>
+</main>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast">
+</div>
+
+
+<script>
+
+/* =========================================================
+   STATE
+========================================================= */
+
+const STORAGE_KEY =
+  "ULTRON_STUDENT_APP_V4";
+
+let memoryStorage = null;
+
+const state = {
+
+  account:null,
+
+  loggedIn:false,
+
+  theme:"light",
+
+  tasks:[],
+
+  stats:{
+    completed:0,
+    focus:0,
+    questions:0
+  },
+
+  mode:"doubt",
+
+  timer:{
+    seconds:1500,
+    running:false,
+    interval:null,
+    type:"focus"
+  }
+
 };
-render();
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+function storageGet(){
+
+  try{
+
+    return localStorage.getItem(STORAGE_KEY);
+
+  }catch(error){
+
+    return memoryStorage;
+
+  }
+
+}
+
+
+function storageSet(value){
+
+  try{
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      value
+    );
+
+  }catch(error){
+
+    memoryStorage=value;
+
+  }
+
+}
+
+
+function saveState(){
+
+  const data={
+
+    account:state.account,
+
+    loggedIn:state.loggedIn,
+
+    theme:state.theme,
+
+    tasks:state.tasks,
+
+    stats:state.stats
+
+  };
+
+
+  storageSet(
+    JSON.stringify(data)
+  );
+
+}
+
+
+function loadState(){
+
+  try{
+
+    const raw=storageGet();
+
+    if(!raw){
+      return;
+    }
+
+    const data=JSON.parse(raw);
+
+
+    state.account=
+      data.account || null;
+
+
+    state.loggedIn=
+      Boolean(data.loggedIn);
+
+
+    state.theme=
+      data.theme || "light";
+
+
+    state.tasks=
+      Array.isArray(data.tasks)
+        ? data.tasks
+        : [];
+
+
+    state.stats={
+
+      completed:
+        Number(
+          data.stats?.completed || 0
+        ),
+
+      focus:
+        Number(
+          data.stats?.focus || 0
+        ),
+
+      questions:
+        Number(
+          data.stats?.questions || 0
+        )
+
+    };
+
+  }catch(error){
+
+    console.warn(
+      "Ultron storage error:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHTML(value){
+
+  return String(
+    value ?? ""
+  ).replace(
+    /[&<>"']/g,
+    function(char){
+
+      const map={
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      };
+
+      return map[char];
+
+    }
+  );
+
+}
+
+
+function toast(message){
+
+  const el=
+    document.getElementById("toast");
+
+
+  el.textContent=message;
+
+  el.classList.add("show");
+
+
+  clearTimeout(
+    window.__ultronToast
+  );
+
+
+  window.__ultronToast=
+    setTimeout(function(){
+
+      el.classList.remove("show");
+
+    },2500);
+
+}
+
+
+/* =========================================================
+   THEME
+========================================================= */
+
+function applyTheme(){
+
+  document.documentElement
+    .setAttribute(
+      "data-theme",
+      state.theme
+    );
+
+}
+
+
+function toggleTheme(){
+
+  state.theme=
+    state.theme==="dark"
+      ? "light"
+      : "dark";
+
+
+  applyTheme();
+
+  saveState();
+
+}
+
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function switchAuth(type){
+
+  const isLogin=
+    type==="login";
+
+
+  document
+    .getElementById("loginForm")
+    .classList.toggle(
+      "hidden",
+      !isLogin
+    );
+
+
+  document
+    .getElementById("signupForm")
+    .classList.toggle(
+      "hidden",
+      isLogin
+    );
+
+
+  document
+    .getElementById("loginTab")
+    .classList.toggle(
+      "active",
+      isLogin
+    );
+
+
+  document
+    .getElementById("signupTab")
+    .classList.toggle(
+      "active",
+      !isLogin
+    );
+
+
+  document
+    .getElementById("authTitle")
+    .textContent=
+      isLogin
+        ? "Welcome back"
+        : "Create your account";
+
+
+  document
+    .getElementById("authSubtitle")
+    .textContent=
+      isLogin
+        ? "Sign in to continue to your Ultron dashboard."
+        : "Create your student profile and start learning.";
+
+}
+
+
+/* =========================================================
+   CREATE ACCOUNT
+========================================================= */
+
+document
+.getElementById("signupForm")
+.addEventListener(
+  "submit",
+  function(event){
+
+    event.preventDefault();
+
+
+    const name=
+      document
+        .getElementById("signupName")
+        .value
+        .trim();
+
+
+    const email=
+      document
+        .getElementById("signupEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password=
+      document
+        .getElementById("signupPassword")
+        .value;
+
+
+    const className=
+      document
+        .getElementById("signupClass")
+        .value
+        .trim();
+
+
+    const rollNo=
+      document
+        .getElementById("signupRollNo")
+        .value
+        .trim();
+
+
+    const section=
+      document
+        .getElementById("signupSection")
+        .value
+        .trim();
+
+
+    const subject=
+      document
+        .getElementById("signupSubject")
+        .value;
+
+
+    if(name.length<2){
+
+      toast("Enter your name.");
+
+      return;
+
+    }
+
+
+    if(password.length<6){
+
+      toast(
+        "Password must be at least 6 characters."
+      );
+
+      return;
+
+    }
+
+
+    state.account={
+
+      name:name,
+
+      email:email,
+
+      password:password,
+
+      className:className,
+
+      rollNo:rollNo,
+
+      section:section,
+
+      subject:subject
+
+    };
+
+
+    state.loggedIn=true;
+
+
+    saveState();
+
+    enterApp();
+
+
+    toast(
+      "Account created successfully ✓"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+document
+.getElementById("loginForm")
+.addEventListener(
+  "submit",
+  function(event){
+
+    event.preventDefault();
+
+
+    const email=
+      document
+        .getElementById("loginEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const password=
+      document
+        .getElementById("loginPassword")
+        .value;
+
+
+    if(!state.account){
+
+      toast(
+        "No account found. Create one first."
+      );
+
+      switchAuth("signup");
+
+      return;
+
+    }
+
+
+    const savedEmail=
+      String(
+        state.account.email || ""
+      )
+      .trim()
+      .toLowerCase();
+
+
+    const savedPassword=
+      String(
+        state.account.password || ""
+      );
+
+
+    if(
+      email!==savedEmail ||
+      password!==savedPassword
+    ){
+
+      toast(
+        "Incorrect email or password."
+      );
+
+      return;
+
+    }
+
+
+    state.loggedIn=true;
+
+    saveState();
+
+    enterApp();
+
+
+    toast(
+      "Welcome back ✓"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   ENTER APP
+========================================================= */
+
+function enterApp(){
+
+  document
+    .getElementById("loginScreen")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("app")
+    .classList.remove("hidden");
+
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+function logout(){
+
+  state.loggedIn=false;
+
+  saveState();
+
+
+  document
+    .getElementById("app")
+    .classList.add("hidden");
+
+
+  document
+    .getElementById("loginScreen")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("loginForm")
+    .reset();
+
+
+  switchAuth("login");
+
+
+  toast(
+    "Logged out successfully."
+  );
+
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+function showPage(page,button){
+
+  document
+    .querySelectorAll(".page")
+    .forEach(function(pageElement){
+
+      pageElement.classList.remove(
+        "active"
+      );
+
+    });
+
+
+  const target=
+    document.getElementById(
+      "page-"+page
+    );
+
+
+  if(target){
+
+    target.classList.add(
+      "active"
+    );
+
+  }
+
+
+  document
+    .querySelectorAll(".nav button")
+    .forEach(function(navButton){
+
+      navButton.classList.remove(
+        "active"
+      );
+
+    });
+
+
+  if(button){
+
+    button.classList.add(
+      "active"
+    );
+
+  }
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+}
+
+
+function openTutor(){
+
+  showPage("tutor");
+
+
+  setTimeout(function(){
+
+    document
+      .getElementById("aiInput")
+      .focus();
+
+  },100);
+
+}
+
+
+function openTutorMode(mode){
+
+  showPage("tutor");
+
+  setMode(mode);
+
+
+  setTimeout(function(){
+
+    document
+      .getElementById("aiInput")
+      .focus();
+
+  },100);
+
+}
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function renderProfile(){
+
+  if(!state.account){
+    return;
+  }
+
+
+  const user=
+    state.account;
+
+
+  const name=
+    user.name || "Student";
+
+
+  document
+    .getElementById("welcomeName")
+    .textContent=name;
+
+
+  document
+    .getElementById("homeProfileName")
+    .textContent=name;
+
+
+  document
+    .getElementById("homeAvatar")
+    .textContent=
+      name
+        .charAt(0)
+        .toUpperCase();
+
+
+  const details=[];
+
+
+  if(user.className){
+
+    details.push(
+      "Class "+
+      escapeHTML(user.className)
+    );
+
+  }
+
+
+  if(user.rollNo){
+
+    details.push(
+      "Roll No. "+
+      escapeHTML(user.rollNo)
+    );
+
+  }
+
+
+  if(user.section){
+
+    details.push(
+      "Section "+
+      escapeHTML(user.section)
+    );
+
+  }
+
+
+  if(user.subject){
+
+    details.push(
+      escapeHTML(user.subject)
+    );
+
+  }
+
+
+  document
+    .getElementById("homeProfileInfo")
+    .innerHTML=
+      details.length
+        ? details.join(" · ")
+        : "Student profile";
+
+
+  document
+    .getElementById("profileName")
+    .value=
+      user.name || "";
+
+
+  document
+    .getElementById("profileEmail")
+    .value=
+      user.email || "";
+
+
+  document
+    .getElementById("profileClass")
+    .value=
+      user.className || "";
+
+
+  document
+    .getElementById("profileRollNo")
+    .value=
+      user.rollNo || "";
+
+
+  document
+    .getElementById("profileSection")
+    .value=
+      user.section || "";
+
+
+  document
+    .getElementById("profileSubject")
+    .value=
+      user.subject || "";
+
+}
+
+
+document
+.getElementById("profileForm")
+.addEventListener(
+  "submit",
+  function(event){
+
+    event.preventDefault();
+
+
+    if(!state.account){
+      return;
+    }
+
+
+    state.account.name=
+      document
+        .getElementById("profileName")
+        .value
+        .trim();
+
+
+    state.account.email=
+      document
+        .getElementById("profileEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    state.account.className=
+      document
+        .getElementById("profileClass")
+        .value
+        .trim();
+
+
+    state.account.rollNo=
+      document
+        .getElementById("profileRollNo")
+        .value
+        .trim();
+
+
+    state.account.section=
+      document
+        .getElementById("profileSection")
+        .value
+        .trim();
+
+
+    state.account.subject=
+      document
+        .getElementById("profileSubject")
+        .value;
+
+
+    saveState();
+
+    renderProfile();
+
+
+    toast(
+      "Profile updated ✓"
+    );
+
+  }
+);
+
+
+/* =========================================================
+   TASKS
+========================================================= */
+
+function addTask(){
+
+  const input=
+    document.getElementById(
+      "taskInput"
+    );
+
+
+  const title=
+    input.value.trim();
+
+
+  if(!title){
+
+    toast(
+      "Enter a task first."
+    );
+
+    return;
+
+  }
+
+
+  state.tasks.unshift({
+
+    id:Date.now(),
+
+    title:title,
+
+    done:false
+
+  });
+
+
+  input.value="";
+
+
+  updateCompletedCount();
+
+  saveState();
+
+  renderTasks();
+
+  renderStats();
+
+}
+
+
+function toggleTask(id){
+
+  const task=
+    state.tasks.find(
+      function(item){
+        return item.id===id;
+      }
+    );
+
+
+  if(!task){
+    return;
+  }
+
+
+  task.done=
+    !task.done;
+
+
+  updateCompletedCount();
+
+  saveState();
+
+  renderTasks();
+
+  renderStats();
+
+}
+
+
+function deleteTask(id){
+
+  state.tasks=
+    state.tasks.filter(
+      function(task){
+        return task.id!==id;
+      }
+    );
+
+
+  updateCompletedCount();
+
+  saveState();
+
+  renderTasks();
+
+  renderStats();
+
+}
+
+
+function updateCompletedCount(){
+
+  state.stats.completed=
+    state.tasks.filter(
+      function(task){
+        return task.done;
+      }
+    ).length;
+
+}
+
+
+function renderTasks(){
+
+  const list=
+    document.getElementById(
+      "taskList"
+    );
+
+
+  if(!state.tasks.length){
+
+    list.innerHTML=`
+
+      <div style="
+        text-align:center;
+        padding:30px;
+        color:var(--muted);
+      ">
+
+        <div style="
+          font-size:27px;
+          margin-bottom:7px;
+        ">
+          ✓
+        </div>
+
+        <strong>
+          No study tasks yet.
+        </strong>
+
+        <div style="
+          font-size:12px;
+          margin-top:4px;
+        ">
+          Add your first task above.
+        </div>
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  list.innerHTML=
+    state.tasks.map(
+      function(task){
+
+        return `
+
+          <div class="task">
+
+            <input
+              type="checkbox"
+              ${task.done ? "checked" : ""}
+              onchange="
+                toggleTask(${task.id})
+              ">
+
+            <span
+              class="
+                task-title
+                ${task.done ? "done" : ""}
+              ">
+              ${escapeHTML(task.title)}
+            </span>
+
+            <button
+              class="icon-btn"
+              style="
+                width:34px;
+                height:34px;
+              "
+              onclick="
+                deleteTask(${task.id})
+              ">
+              ×
+            </button>
+
+          </div>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+function renderStats(){
+
+  document
+    .getElementById("completedCount")
+    .textContent=
+      state.stats.completed;
+
+
+  document
+    .getElementById("focusCount")
+    .textContent=
+      state.stats.focus;
+
+
+  document
+    .getElementById("focusCount2")
+    .textContent=
+      state.stats.focus;
+
+
+  document
+    .getElementById("questionCount")
+    .textContent=
+      state.stats.questions;
+
+
+  const total=
+    state.tasks.length;
+
+
+  const completed=
+    state.tasks.filter(
+      function(task){
+        return task.done;
+      }
+    ).length;
+
+
+  const percent=
+    total
+      ? Math.round(
+          (completed/total)*100
+        )
+      : 0;
+
+
+  document
+    .getElementById("taskProgress")
+    .style.width=
+      percent+"%";
+
+
+  document
+    .getElementById("focusProgress")
+    .style.width=
+      Math.min(
+        state.stats.focus*10,
+        100
+      )+"%";
+
+}
+
+
+/* =========================================================
+   STUDY MODES
+========================================================= */
+
+function setMode(mode,button){
+
+  state.mode=mode;
+
+
+  document
+    .querySelectorAll(".mode-btn")
+    .forEach(
+      function(btn){
+
+        btn.classList.remove(
+          "active"
+        );
+
+      }
+    );
+
+
+  if(button){
+
+    button.classList.add(
+      "active"
+    );
+
+    return;
+
+  }
+
+
+  const target=
+    document.querySelector(
+      '.mode-btn[data-mode="'+
+      mode+
+      '"]'
+    );
+
+
+  if(target){
+
+    target.classList.add(
+      "active"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   AI PROMPT
+========================================================= */
+
+function buildPrompt(text){
+
+  const instructions={
+
+    doubt:
+      "Explain the doubt step by step using simple language and examples.",
+
+    homework:
+      "Help solve the homework while explaining the method so the student learns.",
+
+    summary:
+      "Create a concise revision summary with important points.",
+
+    flashcards:
+      "Create useful question-and-answer flashcards for revision.",
+
+    quiz:
+      "Create a short educational quiz and provide answers at the end."
+
+  };
+
+
+  return `
+
+You are a helpful study assistant.
+
+Mode:
+${instructions[state.mode]}
+
+Student request:
+${text}
+
+Rules:
+- Be accurate.
+- Explain clearly.
+- Use simple language.
+- Structure the answer.
+- Help the student understand instead of simply giving unexplained answers.
+
+`;
+
+}
+
+
+/* =========================================================
+   AI BACKEND
+========================================================= */
+
+async function callAI(request){
+
+  /*
+    Connect your real backend here.
+
+    Example:
+
+    window.ULTRON_AI = async function(request){
+
+      const response = await fetch(
+        "/api/ai",
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify(request)
+        }
+      );
+
+      const data =
+        await response.json();
+
+      return data.answer;
+    };
+
+  */
+
+
+  if(
+    typeof window.ULTRON_AI===
+    "function"
+  ){
+
+    return await window.ULTRON_AI(
+      request
+    );
+
+  }
+
+
+  if(
+    typeof window.claude!=="undefined" &&
+    typeof window.claude.use===
+      "function"
+  ){
+
+    const result=
+      await window.claude.use(
+        request
+      );
+
+
+    return typeof result==="string"
+      ? result
+      : JSON.stringify(result);
+
+  }
+
+
+  throw new Error(
+    "No AI backend connected."
+  );
+
+}
+
+
+async function askAI(){
+
+  const input=
+    document.getElementById(
+      "aiInput"
+    );
+
+
+  const output=
+    document.getElementById(
+      "aiOutput"
+    );
+
+
+  const button=
+    document.getElementById(
+      "askBtn"
+    );
+
+
+  const text=
+    input.value.trim();
+
+
+  if(!text){
+
+    toast(
+      "Enter something to study."
+    );
+
+    input.focus();
+
+    return;
+
+  }
+
+
+  button.disabled=true;
+
+  button.textContent=
+    "Working...";
+
+
+  output.classList.remove(
+    "ai-empty"
+  );
+
+
+  output.textContent=
+    "Preparing your study response...";
+
+
+  try{
+
+    const answer=
+      await callAI({
+
+        mode:state.mode,
+
+        prompt:
+          buildPrompt(text),
+
+        userInput:text
+
+      });
+
+
+    output.textContent=
+      String(answer);
+
+
+    state.stats.questions++;
+
+
+    saveState();
+
+    renderStats();
+
+  }catch(error){
+
+    console.error(error);
+
+
+    output.textContent=
+      "The study engine is not connected yet.\n\n"+
+      "Connect your secure backend using "+
+      "window.ULTRON_AI to enable live responses.";
+
+
+    toast(
+      "Study engine not connected."
+    );
+
+  }finally{
+
+    button.disabled=false;
+
+    button.textContent=
+      "Continue ✦";
+
+  }
+
+}
+
+
+/* =========================================================
+   POMODORO
+========================================================= */
+
+function updateTimer(){
+
+  const minutes=
+    Math.floor(
+      state.timer.seconds/60
+    );
+
+
+  const seconds=
+    state.timer.seconds%60;
+
+
+  document
+    .getElementById("timerDisplay")
+    .textContent=
+      String(minutes).padStart(2,"0")+
+      ":"+
+      String(seconds).padStart(2,"0");
+
+
+  document
+    .getElementById("timerMode")
+    .textContent=
+      state.timer.type==="focus"
+        ? "FOCUS SESSION"
+        : "SHORT BREAK";
+
+
+  document
+    .getElementById("timerBtn")
+    .textContent=
+      state.timer.running
+        ? "Pause"
+        : "Start";
+
+}
+
+
+function toggleTimer(){
+
+  if(state.timer.running){
+
+    clearInterval(
+      state.timer.interval
+    );
+
+
+    state.timer.interval=null;
+
+    state.timer.running=false;
+
+    updateTimer();
+
+    return;
+
+  }
+
+
+  state.timer.running=true;
+
+  updateTimer();
+
+
+  state.timer.interval=
+    setInterval(
+      function(){
+
+        state.timer.seconds--;
+
+        updateTimer();
+
+
+        if(
+          state.timer.seconds<=0
+        ){
+
+          finishTimer();
+
+        }
+
+      },
+      1000
+    );
+
+}
+
+
+function finishTimer(){
+
+  clearInterval(
+    state.timer.interval
+  );
+
+
+  state.timer.interval=null;
+
+  state.timer.running=false;
+
+
+  if(
+    state.timer.type==="focus"
+  ){
+
+    state.stats.focus++;
+
+
+    state.timer.type=
+      "break";
+
+
+    state.timer.seconds=
+      5*60;
+
+
+    toast(
+      "Focus session complete!"
+    );
+
+  }else{
+
+    state.timer.type=
+      "focus";
+
+
+    state.timer.seconds=
+      25*60;
+
+
+    toast(
+      "Break finished!"
+    );
+
+  }
+
+
+  saveState();
+
+  renderStats();
+
+  updateTimer();
+
+}
+
+
+function resetTimer(){
+
+  clearInterval(
+    state.timer.interval
+  );
+
+
+  state.timer.interval=null;
+
+  state.timer.running=false;
+
+  state.timer.type=
+    "focus";
+
+  state.timer.seconds=
+    25*60;
+
+
+  updateTimer();
+
+}
+
+
+/* =========================================================
+   RENDER
+========================================================= */
+
+function renderAll(){
+
+  applyTheme();
+
+  renderProfile();
+
+  renderTasks();
+
+  renderStats();
+
+  updateTimer();
+
+}
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+loadState();
+
+applyTheme();
+
+
+if(
+  state.loggedIn &&
+  state.account
+){
+
+  enterApp();
+
+}else{
+
+  document
+    .getElementById("loginScreen")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("app")
+    .classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   CTRL + K
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.ctrlKey &&
+      event.key.toLowerCase()==="k"
+    ){
+
+      event.preventDefault();
+
+
+      if(state.loggedIn){
+
+        openTutor();
+
+      }
+
+    }
+
+  }
+);
+
 </script>
+
 </body>
 </html>
