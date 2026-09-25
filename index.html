@@ -1,34 +1,726 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ultron — Your AI Study Companion</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0f1017;--card:#181a25;--card2:#20222f;--text:#eef0f6;--dim:#9497ad;--line:#2a2d3d;--accent:#f5b942;--ink:#2e2004;--brand:#7c6cf5;--brand2:#5b4bd8;--good:#4fbf87;--bad:#e5647c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-:root[data-theme="light"]{--bg:#f6f5f1;--card:#fff;--card2:#efeee9;--text:#161722;--dim:#6b6d82;--line:#e2e1da;--accent:#c9860f;--ink:#fff;--brand:#6252e6;--brand2:#4a3cc4}
-html,body{height:100%}*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-button,input,textarea{font-family:inherit}
-:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-#app{max-width:480px;margin:0 auto;min-height:100%}
-main{padding:20px 20px 110px;animation:up .25s ease}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;padding:14px 20px;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em}
-.mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--accent));display:grid;place-items:center;color:#12121c;font-weight:800}
-.ib{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);display:grid;place-items:center;cursor:pointer}
-svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-h1{font-size:26px;line-height:1.2;letter-spacing:-.02em;margin:0 0 6px}
-.sub{color:var(--dim);font-size:14px;line-height:1.5;margin:0 0 20px}
-.st{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);margin:24px 0 10px}
-.f{margin-bottom:14px}.f label{display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:6px}
-.f input,.f textarea{width:100%;padding:13px 14px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:15px}
-.f input:focus,.f textarea:focus{border-color:var(--brand)}
-.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn{width:100%;padding:15px;border-radius:12px;border:0;background:var(--accent);color:var(--ink);font-weight:800;font-size:15px;cursor:pointer;margin-top:8px;transition:transform .1s}
-.btn.g{background:transparent;border:1px solid var(--line);color:var(--text);font-weight:700;font-size:14px
+/*
+ * ULTRON — ALL SOURCE FILES, CONCATENATED FOR REVIEW
+ * ----------------------------------------------------
+ * This single file is for reading/copying convenience only. Each class
+ * below still declares its own 'package' line and belongs in its own
+ * .java file at the matching path under app/src/main/java/... (exactly
+ * as laid out in the project already generated) — a real Android build
+ * will not compile multiple package declarations sitting in one file.
+ * Split it back into one file per class before adding it to Android
+ * Studio.
+ */
+
+
+// ============================================================
+// FILE: model/User.java
+// ============================================================
+package com.ultron.app.model;
+
+import java.io.Serializable;
+
+/**
+ * A student's profile as collected during sign-up.
+ */
+public class User implements Serializable {
+
+    private String fullName;
+    private String schoolClass;   // "class" is a reserved word in Java
+    private String section;
+    private String schoolName;
+    private String dateOfBirth;   // store as ISO "yyyy-MM-dd"
+    private int age;
+    private String email;
+
+    public User() { }
+
+    public User(String fullName, String schoolClass, String section, String schoolName,
+                String dateOfBirth, int age, String email) {
+        this.fullName = fullName;
+        this.schoolClass = schoolClass;
+        this.section = section;
+        this.schoolName = schoolName;
+        this.dateOfBirth = dateOfBirth;
+        this.age = age;
+        this.email = email;
+    }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+
+    public String getSchoolClass() { return schoolClass; }
+    public void setSchoolClass(String schoolClass) { this.schoolClass = schoolClass; }
+
+    public String getSection() { return section; }
+    public void setSection(String section) { this.section = section; }
+
+    public String getSchoolName() { return schoolName; }
+    public void setSchoolName(String schoolName) { this.schoolName = schoolName; }
+
+    public String getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
+
+    public int getAge() { return age; }
+    public void setAge(int age) { this.age = age; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+}
+
+
+// ============================================================
+// FILE: subscription/SubscriptionTier.java
+// ============================================================
+package com.ultron.app.subscription;
+
+/**
+ * The three plans Ultron offers. Prices are in INR.
+ * firstMonthPriceInr applies once; renewalPriceInr applies every month after.
+ */
+public enum SubscriptionTier {
+
+    FREE(0, 0, 50, 10, 35),
+    BASIC(99, 199, 200, 60, 60),
+    PRO(299, 399, Integer.MAX_VALUE, Integer.MAX_VALUE, 100);
+
+    public final int firstMonthPriceInr;
+    public final int renewalPriceInr;
+    public final int monthlyChatLimit;
+    public final int monthlyImageLimit;
+    public final int aiCapacityPercent; // see SubscriptionManager for how this maps to a real AI setting
+
+    SubscriptionTier(int firstMonthPriceInr, int renewalPriceInr, int monthlyChatLimit,
+                      int monthlyImageLimit, int aiCapacityPercent) {
+        this.firstMonthPriceInr = firstMonthPriceInr;
+        this.renewalPriceInr = renewalPriceInr;
+        this.monthlyChatLimit = monthlyChatLimit;
+        this.monthlyImageLimit = monthlyImageLimit;
+        this.aiCapacityPercent = aiCapacityPercent;
+    }
+}
+
+
+// ============================================================
+// FILE: subscription/SubscriptionManager.java
+// ============================================================
+package com.ultron.app.subscription;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import java.util.Calendar;
+
+/**
+ * Tracks the signed-in student's plan and enforces the chat / image
+ * limits for that plan. Usage counters live in SharedPreferences and
+ * reset automatically at the start of each calendar month.
+ *
+ * IMPORTANT: this class enforces limits on-device for fast UX ("you're
+ * out of chats today"). It must NOT be the only enforcement layer -- a
+ * modified APK could zero out these prefs. Your backend should keep its
+ * own counters per user and refuse to call the AI provider once someone
+ * is over their plan's limit.
+ */
+public class SubscriptionManager {
+
+    private static final String PREFS = "ultron_subscription";
+    private static final String KEY_TIER = "tier";
+    private static final String KEY_CHAT_COUNT = "chat_count";
+    private static final String KEY_IMAGE_COUNT = "image_count";
+    private static final String KEY_RESET_MONTH = "reset_month";
+    private static final String KEY_IS_OWNER_ACCOUNT = "is_owner_account";
+
+    private final SharedPreferences prefs;
+
+    public SubscriptionManager(Context context) {
+        prefs = context.getApplicationContext()
+                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        resetIfNewMonth();
+    }
+
+    private void resetIfNewMonth() {
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
+        int storedMonth = prefs.getInt(KEY_RESET_MONTH, -1);
+        if (currentMonth != storedMonth) {
+            prefs.edit()
+                    .putInt(KEY_CHAT_COUNT, 0)
+                    .putInt(KEY_IMAGE_COUNT, 0)
+                    .putInt(KEY_RESET_MONTH, currentMonth)
+                    .apply();
+        }
+    }
+
+    public SubscriptionTier getTier() {
+        // Owner accounts (see SessionManager) always resolve to PRO locally.
+        // The real grant should still be confirmed server-side on every AI call.
+        if (prefs.getBoolean(KEY_IS_OWNER_ACCOUNT, false)) {
+            return SubscriptionTier.PRO;
+        }
+        String name = prefs.getString(KEY_TIER, SubscriptionTier.FREE.name());
+        return SubscriptionTier.valueOf(name);
+    }
+
+    public void setTier(SubscriptionTier tier) {
+        prefs.edit().putString(KEY_TIER, tier.name()).apply();
+    }
+
+    public void markAsOwnerAccount(boolean isOwner) {
+        prefs.edit().putBoolean(KEY_IS_OWNER_ACCOUNT, isOwner).apply();
+    }
+
+    public boolean canSendChat() {
+        return prefs.getInt(KEY_CHAT_COUNT, 0) < getTier().monthlyChatLimit;
+    }
+
+    public boolean canSubmitImage() {
+        return prefs.getInt(KEY_IMAGE_COUNT, 0) < getTier().monthlyImageLimit;
+    }
+
+    public void recordChatUsed() {
+        prefs.edit().putInt(KEY_CHAT_COUNT, prefs.getInt(KEY_CHAT_COUNT, 0) + 1).apply();
+    }
+
+    public void recordImageUsed() {
+        prefs.edit().putInt(KEY_IMAGE_COUNT, prefs.getInt(KEY_IMAGE_COUNT, 0) + 1).apply();
+    }
+
+    public int getChatsRemaining() {
+        int limit = getTier().monthlyChatLimit;
+        if (limit == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return Math.max(0, limit - prefs.getInt(KEY_CHAT_COUNT, 0));
+    }
+
+    public int getImagesRemaining() {
+        int limit = getTier().monthlyImageLimit;
+        if (limit == Integer.MAX_VALUE) return Integer.MAX_VALUE;
+        return Math.max(0, limit - prefs.getInt(KEY_IMAGE_COUNT, 0));
+    }
+
+    /**
+     * There's no real "AI capacity %" knob on an LLM API. The honest way to
+     * implement it is to translate the percentage into something the model
+     * API actually accepts -- here, a response-length cap -- so free users
+     * get shorter / simpler answers and Pro users get full-length ones.
+     * Your backend should call this (or an equivalent) before each AI
+     * request and pass the result as max_tokens.
+     */
+    public int getMaxTokensForCapacity(int baseMaxTokens) {
+        return Math.max(64, (baseMaxTokens * getTier().aiCapacityPercent) / 100);
+    }
+}
+
+
+// ============================================================
+// FILE: session/SessionManager.java
+// ============================================================
+package com.ultron.app.session;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.google.gson.Gson;
+import com.ultron.app.model.User;
+
+/**
+ * Keeps the student signed in across app restarts, so the registration
+ * screen only appears once. Call isLoggedIn() at launch to decide whether
+ * to show the home screen or the sign-up flow.
+ */
+public class SessionManager {
+
+    private static final String PREFS = "ultron_session";
+    private static final String KEY_TOKEN = "auth_token";
+    private static final String KEY_USER = "user_json";
+
+    private final SharedPreferences prefs;
+    private final Gson gson = new Gson();
+
+    public SessionManager(Context context) {
+        prefs = context.getApplicationContext()
+                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    public void saveSession(String authToken, User user) {
+        prefs.edit()
+                .putString(KEY_TOKEN, authToken)
+                .putString(KEY_USER, gson.toJson(user))
+                .apply();
+    }
+
+    public boolean isLoggedIn() {
+        return prefs.getString(KEY_TOKEN, null) != null;
+    }
+
+    public String getAuthToken() {
+        return prefs.getString(KEY_TOKEN, null);
+    }
+
+    public User getUser() {
+        String json = prefs.getString(KEY_USER, null);
+        return json == null ? null : gson.fromJson(json, User.class);
+    }
+
+    public void logout() {
+        prefs.edit().clear().apply();
+    }
+
+    /**
+     * Whether to grant this account the "always premium" status the two
+     * app-owner accounts should get.
+     *
+     * Doing the check this way -- a hardcoded list inside the APK -- is
+     * only safe for a quick prototype: anyone can decompile the app, read
+     * this string, and sign up with a look-alike email, or simply patch
+     * this method to always return true. For a real release, move this
+     * check server-side: your backend verifies the signed-in account's
+     * *authenticated* email (via a Firebase Auth / Google Sign-In token,
+     * not a self-reported email field) against the owner list, and only
+     * the backend's response should ever set the tier to PRO.
+     */
+    public boolean isOwnerAccount(String verifiedEmail) {
+        if (verifiedEmail == null) return false;
+        return verifiedEmail.equalsIgnoreCase("bharadwajashok289@gmail.com")
+                || verifiedEmail.equalsIgnoreCase("manaskakkunuri55@gmail.com");
+    }
+}
+
+
+// ============================================================
+// FILE: features/PomodoroTimer.java
+// ============================================================
+package com.ultron.app.features;
+
+import android.os.CountDownTimer;
+
+/**
+ * A work/break Pomodoro timer. Default: 25 min focus, 5 min short break,
+ * 15 min long break every 4th cycle -- all configurable.
+ */
+public class PomodoroTimer {
+
+    public enum Phase { FOCUS, SHORT_BREAK, LONG_BREAK }
+
+    public interface Listener {
+        void onTick(long millisRemaining);
+        void onPhaseComplete(Phase justFinished, Phase next);
+    }
+
+    private final long focusMillis;
+    private final long shortBreakMillis;
+    private final long longBreakMillis;
+    private final int cyclesBeforeLongBreak;
+
+    private int completedFocusCycles = 0;
+    private Phase currentPhase = Phase.FOCUS;
+    private CountDownTimer timer;
+    private Listener listener;
+
+    public PomodoroTimer(int focusMinutes, int shortBreakMinutes, int longBreakMinutes,
+                          int cyclesBeforeLongBreak) {
+        this.focusMillis = focusMinutes * 60_000L;
+        this.shortBreakMillis = shortBreakMinutes * 60_000L;
+        this.longBreakMillis = longBreakMinutes * 60_000L;
+        this.cyclesBeforeLongBreak = cyclesBeforeLongBreak;
+    }
+
+    public PomodoroTimer() {
+        this(25, 5, 15, 4);
+    }
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+    }
+
+    public void start() {
+        long duration = durationFor(currentPhase);
+        timer = new CountDownTimer(duration, 1000) {
+            @Override public void onTick(long millisUntilFinished) {
+                if (listener != null) listener.onTick(millisUntilFinished);
+            }
+
+            @Override public void onFinish() {
+                advancePhase();
+            }
+        };
+        timer.start();
+    }
+
+    public void stop() {
+        if (timer != null) timer.cancel();
+    }
+
+    private long durationFor(Phase phase) {
+        switch (phase) {
+            case FOCUS: return focusMillis;
+            case SHORT_BREAK: return shortBreakMillis;
+            case LONG_BREAK: return longBreakMillis;
+        }
+        return focusMillis;
+    }
+
+    private void advancePhase() {
+        Phase finished = currentPhase;
+
+        if (currentPhase == Phase.FOCUS) {
+            completedFocusCycles++;
+            currentPhase = (completedFocusCycles % cyclesBeforeLongBreak == 0)
+                    ? Phase.LONG_BREAK
+                    : Phase.SHORT_BREAK;
+        } else {
+            currentPhase = Phase.FOCUS;
+        }
+
+        if (listener != null) listener.onPhaseComplete(finished, currentPhase);
+        start();
+    }
+
+    public Phase getCurrentPhase() {
+        return currentPhase;
+    }
+}
+
+
+// ============================================================
+// FILE: network/AiBackendClient.java
+// ============================================================
+package com.ultron.app.network;
+
+import android.net.Uri;
+
+import com.ultron.app.features.FlashcardManager.Flashcard;
+
+import java.io.File;
+import java.util.List;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Header;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+
+/**
+ * All calls go to YOUR OWN backend server -- never call the AI provider's
+ * API directly from the app. Reasons:
+ *   1. Your AI provider API key must never ship inside an APK; it can be
+ *      extracted in minutes from a decompiled build.
+ *   2. Chat/image limits and the "AI capacity" per plan must be enforced
+ *      somewhere a user can't tamper with (see SubscriptionManager).
+ *   3. Content moderation and payment verification need a trusted server,
+ *      not the phone.
+ *
+ * This interface is a starting contract for that backend; you'll build the
+ * server (Node/Express, Django, Spring Boot, whatever you're comfortable
+ * with) to implement these routes and call the AI provider from there.
+ */
+public interface AiBackendClient {
+
+    class SolutionResponse {
+        public String steps;
+    }
+
+    class ModerationResponse {
+        public boolean flagged;
+    }
+
+    class ChatResponse {
+        public String reply;
+    }
+
+    @Multipart
+    @POST("flashcards/generate")
+    Call<List<Flashcard>> generateFlashcards(@Header("Authorization") String bearerToken,
+                                              @Part MultipartBody.Part image);
+
+    @Multipart
+    @POST("homework/solve")
+    Call<SolutionResponse> solveHomework(@Header("Authorization") String bearerToken,
+                                          @Part MultipartBody.Part image);
+
+    @POST("doubts/check-text")
+    Call<ModerationResponse> checkTextModeration(@Header("Authorization") String bearerToken,
+                                                  @Body String question);
+
+    @Multipart
+    @POST("doubts/check-image")
+    Call<ModerationResponse> checkImageModeration(@Header("Authorization") String bearerToken,
+                                                   @Part MultipartBody.Part image);
+
+    @POST("chat/send")
+    Call<ChatResponse> sendChat(@Header("Authorization") String bearerToken,
+                                 @Body String message);
+
+    @POST("subscription/verify-owner")
+    Call<ModerationResponse> verifyOwnerAccount(@Header("Authorization") String bearerToken);
+
+    // Helper: wraps an image Uri into the multipart body Retrofit needs.
+    // NOTE: for a content:// Uri (e.g. from the gallery picker) you must
+    // first copy it to a temp File via ContentResolver.openInputStream()
+    // -- new File(uri.getPath()) only works for file:// Uris. Shown
+    // simplified here; swap in your real Uri-to-File helper.
+    static MultipartBody.Part toMultipart(Uri imageUri) {
+        File file = new File(imageUri.getPath());
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+        return MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+    }
+}
+
+
+// ============================================================
+// FILE: features/DoubtModerationManager.java
+// ============================================================
+package com.ultron.app.features;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.ultron.app.network.AiBackendClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * Guards "Doubts" mode. Every text/image submission should be checked by
+ * the backend BEFORE it's sent to the AI. If the check comes back
+ * flagged, the student is locked out of this mode for 5 minutes.
+ *
+ * The actual classification (is this content something we shouldn't
+ * answer) belongs on your backend, ideally via a proper moderation
+ * endpoint rather than a client-side keyword list -- keyword lists are
+ * both trivially bypassed and can't catch meaning the way a real
+ * classifier can. This class just manages the lockout state once your
+ * backend has made that call.
+ */
+public class DoubtModerationManager {
+
+    private static final String PREFS = "ultron_doubts_moderation";
+    private static final String KEY_LOCKOUT_UNTIL = "lockout_until";
+    private static final long LOCKOUT_DURATION_MILLIS = 5 * 60 * 1000L;
+
+    private final SharedPreferences prefs;
+
+    public interface ModerationCallback {
+        void onResult(boolean flagged);
+        void onError(Exception e);
+    }
+
+    public DoubtModerationManager(Context context) {
+        prefs = context.getApplicationContext()
+                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    public boolean isLockedOut() {
+        return System.currentTimeMillis() < prefs.getLong(KEY_LOCKOUT_UNTIL, 0);
+    }
+
+    public long getRemainingLockoutSeconds() {
+        long remaining = prefs.getLong(KEY_LOCKOUT_UNTIL, 0) - System.currentTimeMillis();
+        return Math.max(0, remaining / 1000);
+    }
+
+    private void applyLockout() {
+        prefs.edit()
+                .putLong(KEY_LOCKOUT_UNTIL, System.currentTimeMillis() + LOCKOUT_DURATION_MILLIS)
+                .apply();
+    }
+
+    /** Call with the result your backend's moderation check returned. */
+    public void handleModerationResult(boolean flaggedByBackend) {
+        if (flaggedByBackend) {
+            applyLockout();
+        }
+    }
+
+    /** Convenience wrapper: checks a text doubt against the backend and applies the lockout if needed. */
+    public void checkText(AiBackendClient client, String authToken, String text, ModerationCallback callback) {
+        client.checkTextModeration(authToken, text).enqueue(new Callback<AiBackendClient.ModerationResponse>() {
+            @Override
+            public void onResponse(Call<AiBackendClient.ModerationResponse> call,
+                                    Response<AiBackendClient.ModerationResponse> response) {
+                boolean flagged = response.isSuccessful() && response.body() != null && response.body().flagged;
+                handleModerationResult(flagged);
+                callback.onResult(flagged);
+            }
+
+            @Override
+            public void onFailure(Call<AiBackendClient.ModerationResponse> call, Throwable t) {
+                callback.onError(new Exception(t));
+            }
+        });
+    }
+}
+
+
+// ============================================================
+// FILE: features/FlashcardManager.java
+// ============================================================
+package com.ultron.app.features;
+
+import android.net.Uri;
+
+import com.ultron.app.network.AiBackendClient;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * Turns a photo of a syllabus / textbook page into a set of flashcard
+ * style questions, by sending the image to your backend (which relays it
+ * to the AI provider along with a "generate flashcards" prompt).
+ */
+public class FlashcardManager {
+
+    public static class Flashcard {
+        public String question;
+        public String answer;
+    }
+
+    public interface FlashcardCallback {
+        void onSuccess(List<Flashcard> flashcards);
+        void onFailure(Throwable t);
+    }
+
+    private final AiBackendClient client;
+
+    public FlashcardManager(AiBackendClient client) {
+        this.client = client;
+    }
+
+    public void generateFromImage(String authToken, Uri imageUri, FlashcardCallback callback) {
+        client.generateFlashcards(authToken, AiBackendClient.toMultipart(imageUri))
+                .enqueue(new Callback<List<Flashcard>>() {
+                    @Override
+                    public void onResponse(Call<List<Flashcard>> call, Response<List<Flashcard>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            callback.onSuccess(response.body());
+                        } else {
+                            callback.onFailure(new RuntimeException("Server error: " + response.code()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Flashcard>> call, Throwable t) {
+                        callback.onFailure(t);
+                    }
+                });
+    }
+}
+
+
+// ============================================================
+// FILE: features/HomeworkAssistManager.java
+// ============================================================
+package com.ultron.app.features;
+
+import android.net.Uri;
+
+import com.ultron.app.network.AiBackendClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+/**
+ * Sends a photo of a homework problem to the backend and returns a
+ * worked, step-by-step solution -- aimed at helping the student
+ * understand the method, not just hand over a bare final answer.
+ */
+public class HomeworkAssistManager {
+
+    public interface HomeworkCallback {
+        void onSuccess(String stepByStepSolution);
+        void onFailure(Throwable t);
+    }
+
+    private final AiBackendClient client;
+
+    public HomeworkAssistManager(AiBackendClient client) {
+        this.client = client;
+    }
+
+    public void solveFromImage(String authToken, Uri imageUri, HomeworkCallback callback) {
+        client.solveHomework(authToken, AiBackendClient.toMultipart(imageUri))
+                .enqueue(new Callback<AiBackendClient.SolutionResponse>() {
+                    @Override
+                    public void onResponse(Call<AiBackendClient.SolutionResponse> call,
+                                            Response<AiBackendClient.SolutionResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            callback.onSuccess(response.body().steps);
+                        } else {
+                            callback.onFailure(new RuntimeException("Server error: " + response.code()));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<AiBackendClient.SolutionResponse> call, Throwable t) {
+                        callback.onFailure(t);
+                    }
+                });
+    }
+}
+
+
+// ============================================================
+// FILE: payment/PaymentManager.java
+// ============================================================
+package com.ultron.app.payment;
+
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.widget.Toast;
+
+import com.ultron.app.subscription.SubscriptionTier;
+
+/**
+ * Launches a UPI payment for a subscription. Ultron doesn't process
+ * payments itself -- it hands off to whichever UPI app the student has
+ * installed (Google Pay, PhonePe, Paytm, BHIM...), and the money goes
+ * straight to the configured VPA (Virtual Payment Address).
+ *
+ * Because there's no automatic webhook confirming a UPI deep-link payment
+ * back to your backend, upgrades have to be applied manually once you see
+ * the payment land -- see the note in SubscriptionManager#setTier and the
+ * README for how to make that manual step quick for the two owner
+ * accounts.
+ */
+public class PaymentManager {
+
+    private static final String PAYEE_VPA = "shreetulasi@oksbi";
+    private static final String PAYEE_NAME = "Ultron";
+
+    public void launchUpiPayment(Context context, SubscriptionTier tier, boolean isFirstMonth) {
+        int amount = isFirstMonth ? tier.firstMonthPriceInr : tier.renewalPriceInr;
+        if (amount <= 0) return; // nothing to pay for FREE
+
+        String note = "Ultron " + tier.name() + " subscription";
+        Uri upiUri = new Uri.Builder()
+                .scheme("upi")
+                .authority("pay")
+                .appendQueryParameter("pa", PAYEE_VPA)
+                .appendQueryParameter("pn", PAYEE_NAME)
+                .appendQueryParameter("tn", note)
+                .appendQueryParameter("am", String.valueOf(amount))
+                .appendQueryParameter("cu", "INR")
+                .build();
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, upiUri);
+        try {
+            context.startActivity(intent);
+            // TODO: record a "payment pending verification" entry (locally
+            // and/or via your backend) here so the owner accounts have a
+            // queue to check against, rather than relying on the raw UPI
+            // app history alone.
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(context, "No UPI app found. Please install Google Pay, PhonePe or similar.",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+}
