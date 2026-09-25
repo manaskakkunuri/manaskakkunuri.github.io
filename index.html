@@ -1,726 +1,261 @@
-/*
- * ULTRON — ALL SOURCE FILES, CONCATENATED FOR REVIEW
- * ----------------------------------------------------
- * This single file is for reading/copying convenience only. Each class
- * below still declares its own 'package' line and belongs in its own
- * .java file at the matching path under app/src/main/java/... (exactly
- * as laid out in the project already generated) — a real Android build
- * will not compile multiple package declarations sitting in one file.
- * Split it back into one file per class before adding it to Android
- * Studio.
- */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ultron — Study Assistant</title>
+<style>
+:root{--bg:#f7f7fb;--panel:#fff;--text:#1a1a2e;--muted:#6b6b80;--accent:#6c5ce7;--border:#e3e3ef;--danger:#e74c3c;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#12121c;--panel:#1c1c2b;--text:#eaeaf5;--muted:#9a9ab0;--accent:#8b7cf6;--border:#2c2c40;}}
+:root[data-theme="dark"]{--bg:#12121c;--panel:#1c1c2b;--text:#eaeaf5;--muted:#9a9ab0;--accent:#8b7cf6;--border:#2c2c40;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);}
+header{position:sticky;top:0;padding:14px 16px calc(14px + env(safe-area-inset-top,0px));background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;z-index:5;gap:8px;}
+header h1{font-size:18px;margin:0;}
+header .ctrls{display:flex;gap:6px;align-items:center;}
+select,input,textarea{font-family:inherit;}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;}
+nav button{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:20px;font-size:13px;cursor:pointer;}
+nav button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+main{max-width:640px;margin:0 auto;padding:8px 16px 40px;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px;}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px;}
+input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:14px;}
+textarea{min-height:80px;resize:vertical;}
+button.primary{background:var(--accent);color:#fff;border:none;padding:11px 16px;border-radius:9px;font-size:14px;cursor:pointer;margin-top:12px;width:100%;}
+button.primary:disabled{opacity:.5;cursor:default;}
+button.ghost{background:none;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;}
+.plan{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.plan.current{border-color:var(--accent);}
+.plan h3{margin:0 0 4px;}
+.price{color:var(--accent);font-weight:600;}
+.muted{color:var(--muted);font-size:13px;}
+.result{white-space:pre-wrap;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;font-size:14px;}
+.timer{font-size:56px;text-align:center;margin:20px 0;font-variant-numeric:tabular-nums;}
+.row{display:flex;gap:8px;}
+.row button{flex:1;}
+.flag{color:var(--danger);font-size:13px;margin-top:8px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Ultron</h1>
+  <div class="ctrls">
+    <select id="langSel" onchange="setLang(this.value)"><option value="en">EN</option><option value="hi">हिं</option></select>
+    <button class="ghost" id="themeBtn">🌓</button>
+  </div>
+</header>
+<div id="app"></div>
+<script>
+const TIERS = {
+  FREE:{chats:50, images:10, capacity:35, first:0, renew:0},
+  BASIC:{chats:200, images:60, capacity:60, first:99, renew:199},
+  PRO:{chats:Infinity, images:Infinity, capacity:100, first:299, renew:399}
+};
+const STR = {
+  en:{helper:'AI Helper',pomodoro:'Pomodoro',plans:'Plans',logout:'Log out',ask:'Ask Ultron',mode:'Mode',
+      doubt:'Ask a doubt',homework:'Homework assist',flash:'Flashcards from a syllabus photo'},
+  hi:{helper:'एआई सहायक',pomodoro:'पोमोडोरो',plans:'योजनाएँ',logout:'लॉग आउट',ask:'Ultron से पूछें',mode:'मोड',
+      doubt:'संदेह पूछें',homework:'होमवर्क सहायता',flash:'सिलेबस फोटो से फ्लैशकार्ड'}
+};
+function L(){ return localStorage.getItem('ultron_lang')||'en'; }
+function setLang(l){ localStorage.setItem('ultron_lang', l); render(); }
 
+function getUser(){ return JSON.parse(localStorage.getItem('ultron_user')||'null'); }
+function getTier(){ return localStorage.getItem('ultron_tier')||'FREE'; }
+function setTier(t){ localStorage.setItem('ultron_tier', t); }
+function getUsage(){
+  let u = JSON.parse(localStorage.getItem('ultron_usage')||'null');
+  const m = new Date().getMonth();
+  if(!u || u.month !== m){ u = {month:m, chats:0, images:0}; localStorage.setItem('ultron_usage', JSON.stringify(u)); }
+  return u;
+}
+function saveUsage(u){ localStorage.setItem('ultron_usage', JSON.stringify(u)); }
+function usageLine(){
+  const t=getTier(), u=getUsage();
+  const cl = TIERS[t].chats===Infinity?'∞':Math.max(0,TIERS[t].chats-u.chats);
+  const il = TIERS[t].images===Infinity?'∞':Math.max(0,TIERS[t].images-u.images);
+  return 'Plan: '+t+' · Chats left: '+cl+' · Images left: '+il;
+}
+function lockoutRemaining(){
+  const end = parseInt(localStorage.getItem('ultron_lockout')||'0',10);
+  return Math.max(0, Math.ceil((end-Date.now())/1000));
+}
+function setLockout(){ localStorage.setItem('ultron_lockout', String(Date.now()+5*60*1000)); }
+function escapeHtml(s){ return s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function val(id){ return document.getElementById(id).value.trim(); }
 
-// ============================================================
-// FILE: model/User.java
-// ============================================================
-package com.ultron.app.model;
+let view = getUser() ? 'helper' : 'signup';
+function render(){
+  const app = document.getElementById('app');
+  document.getElementById('langSel').value = L();
+  if(!getUser()){ app.innerHTML = viewSignup(); return; }
+  if(view==='pomodoro') app.innerHTML = viewPomodoro();
+  else if(view==='plans') app.innerHTML = viewPlans();
+  else app.innerHTML = viewHelper();
+}
+function go(v){ view=v; render(); }
+function logout(){ localStorage.removeItem('ultron_user'); view='signup'; render(); }
 
-import java.io.Serializable;
-
-/**
- * A student's profile as collected during sign-up.
- */
-public class User implements Serializable {
-
-    private String fullName;
-    private String schoolClass;   // "class" is a reserved word in Java
-    private String section;
-    private String schoolName;
-    private String dateOfBirth;   // store as ISO "yyyy-MM-dd"
-    private int age;
-    private String email;
-
-    public User() { }
-
-    public User(String fullName, String schoolClass, String section, String schoolName,
-                String dateOfBirth, int age, String email) {
-        this.fullName = fullName;
-        this.schoolClass = schoolClass;
-        this.section = section;
-        this.schoolName = schoolName;
-        this.dateOfBirth = dateOfBirth;
-        this.age = age;
-        this.email = email;
-    }
-
-    public String getFullName() { return fullName; }
-    public void setFullName(String fullName) { this.fullName = fullName; }
-
-    public String getSchoolClass() { return schoolClass; }
-    public void setSchoolClass(String schoolClass) { this.schoolClass = schoolClass; }
-
-    public String getSection() { return section; }
-    public void setSection(String section) { this.section = section; }
-
-    public String getSchoolName() { return schoolName; }
-    public void setSchoolName(String schoolName) { this.schoolName = schoolName; }
-
-    public String getDateOfBirth() { return dateOfBirth; }
-    public void setDateOfBirth(String dateOfBirth) { this.dateOfBirth = dateOfBirth; }
-
-    public int getAge() { return age; }
-    public void setAge(int age) { this.age = age; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+function shell(active, inner){
+  const s = STR[L()];
+  const tabs = [['helper',s.helper],['pomodoro',s.pomodoro],['plans',s.plans]];
+  let nav = '<nav>' + tabs.map(([k,l])=>'<button class="'+(k===active?'active':'')+'" onclick="go(\''+k+'\')">'+l+'</button>').join('') +
+    '<button onclick="logout()">'+s.logout+'</button></nav>';
+  return nav + '<main>' + inner + '</main>';
 }
 
-
-// ============================================================
-// FILE: subscription/SubscriptionTier.java
-// ============================================================
-package com.ultron.app.subscription;
-
-/**
- * The three plans Ultron offers. Prices are in INR.
- * firstMonthPriceInr applies once; renewalPriceInr applies every month after.
- */
-public enum SubscriptionTier {
-
-    FREE(0, 0, 50, 10, 35),
-    BASIC(99, 199, 200, 60, 60),
-    PRO(299, 399, Integer.MAX_VALUE, Integer.MAX_VALUE, 100);
-
-    public final int firstMonthPriceInr;
-    public final int renewalPriceInr;
-    public final int monthlyChatLimit;
-    public final int monthlyImageLimit;
-    public final int aiCapacityPercent; // see SubscriptionManager for how this maps to a real AI setting
-
-    SubscriptionTier(int firstMonthPriceInr, int renewalPriceInr, int monthlyChatLimit,
-                      int monthlyImageLimit, int aiCapacityPercent) {
-        this.firstMonthPriceInr = firstMonthPriceInr;
-        this.renewalPriceInr = renewalPriceInr;
-        this.monthlyChatLimit = monthlyChatLimit;
-        this.monthlyImageLimit = monthlyImageLimit;
-        this.aiCapacityPercent = aiCapacityPercent;
-    }
+function viewSignup(){
+  return '<main><div class="card"><h2>Create your profile</h2>' +
+    '<label>Full name</label><input id="f_name">' +
+    '<label>Class</label><input id="f_class" placeholder="e.g. 10th">' +
+    '<label>Section</label><input id="f_section" placeholder="e.g. A">' +
+    '<label>School name</label><input id="f_school">' +
+    '<label>Date of birth</label><input id="f_dob" type="date">' +
+    '<label>Age</label><input id="f_age" type="number" min="5" max="25">' +
+    '<label>Email</label><input id="f_email" type="email">' +
+    '<button class="primary" onclick="submitSignup()">Get started</button></div></main>';
+}
+function submitSignup(){
+  const u = {fullName:val('f_name'), schoolClass:val('f_class'), section:val('f_section'),
+    schoolName:val('f_school'), dob:val('f_dob'), age:val('f_age'), email:val('f_email')};
+  if(!u.fullName || !u.email){ alert('Please fill in your name and email.'); return; }
+  localStorage.setItem('ultron_user', JSON.stringify(u));
+  view='helper'; render();
 }
 
+let lockTicker = null;
+function ensureLockTicker(){
+  if(lockTicker) return;
+  lockTicker = setInterval(()=>{
+    if(view==='helper'){
+      if(lockoutRemaining() > 0){ render(); } else { clearInterval(lockTicker); lockTicker=null; render(); }
+    } else { clearInterval(lockTicker); lockTicker=null; }
+  }, 1000);
+}
+function viewHelper(){
+  const s = STR[L()];
+  const lockSec = lockoutRemaining();
+  if(lockSec>0) ensureLockTicker();
+  return shell('helper',
+    '<div class="card">' +
+    '<div class="muted" id="h_usage">'+usageLine()+'</div>' +
+    '<label>'+s.mode+'</label>' +
+    '<select id="h_mode"><option value="doubt">'+s.doubt+'</option><option value="homework">'+s.homework+'</option><option value="flashcards">'+s.flash+'</option></select>' +
+    '<label>Type your question (optional for homework/flashcards)</label>' +
+    '<textarea id="h_text" placeholder="Type your doubt here..."></textarea>' +
+    '<label>Or attach a photo</label>' +
+    '<input type="file" id="h_file" accept="image/*">' +
+    (lockSec>0 ? '<div class="flag">Doubts mode is locked for '+lockSec+'s due to flagged content.</div>' : '') +
+    '<button class="primary" id="h_btn" onclick="askHelper()" '+(lockSec>0?'disabled':'')+'>'+s.ask+'</button>' +
+    '<div id="h_result"></div></div>'
+  );
+}
+function setResult(t){ document.getElementById('h_result').innerHTML = t ? ('<div class="result">'+escapeHtml(t)+'</div>') : ''; }
 
-// ============================================================
-// FILE: subscription/SubscriptionManager.java
-// ============================================================
-package com.ultron.app.subscription;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import java.util.Calendar;
-
-/**
- * Tracks the signed-in student's plan and enforces the chat / image
- * limits for that plan. Usage counters live in SharedPreferences and
- * reset automatically at the start of each calendar month.
- *
- * IMPORTANT: this class enforces limits on-device for fast UX ("you're
- * out of chats today"). It must NOT be the only enforcement layer -- a
- * modified APK could zero out these prefs. Your backend should keep its
- * own counters per user and refuse to call the AI provider once someone
- * is over their plan's limit.
- */
-public class SubscriptionManager {
-
-    private static final String PREFS = "ultron_subscription";
-    private static final String KEY_TIER = "tier";
-    private static final String KEY_CHAT_COUNT = "chat_count";
-    private static final String KEY_IMAGE_COUNT = "image_count";
-    private static final String KEY_RESET_MONTH = "reset_month";
-    private static final String KEY_IS_OWNER_ACCOUNT = "is_owner_account";
-
-    private final SharedPreferences prefs;
-
-    public SubscriptionManager(Context context) {
-        prefs = context.getApplicationContext()
-                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        resetIfNewMonth();
+async function askHelper(){
+  const mode = document.getElementById('h_mode').value;
+  const text = document.getElementById('h_text').value.trim();
+  const file = document.getElementById('h_file').files[0];
+  const t = getTier(), u = getUsage();
+  if(u.chats >= TIERS[t].chats){ setResult('You have used all your chats for this plan this month.'); return; }
+  if(file && u.images >= TIERS[t].images){ setResult('You have used all your image submissions for this plan this month.'); return; }
+  const btn = document.getElementById('h_btn');
+  btn.disabled = true; setResult('Thinking...');
+  try{
+    const sample = await claude.use('sample');
+    if(!sample){ setResult('AI features are not available in this view.'); btn.disabled=false; return; }
+    let images = [];
+    if(file){ const limits = await sample.limits(); if(limits.images) images = [file]; }
+    if(mode==='doubt'){
+      const data = await sample.json(
+        'You are a friendly study tutor for a school student. The student asks: "'+(text||'(see attached image)')+
+        '". If this is a genuine study doubt, answer it clearly for their level. If it asks for anything unsafe, ' +
+        'explicit, or unrelated to studies that should not be answered, set flagged true and leave answer empty. ' +
+        'Reply with ONLY JSON: {"flagged": boolean, "answer": string}',
+        {images, modelTier:'quick'}
+      );
+      if(data.flagged){ setLockout(); render(); return; }
+      setResult(data.answer);
+    } else if(mode==='homework'){
+      const r = await sample('You are a patient tutor. Solve this homework step by step so the student learns the method, not just the final answer:\n'+(text||'(see attached photo of the homework)'), {images});
+      setResult(r.text);
+    } else {
+      const data = await sample.json(
+        'From this syllabus/textbook content, generate 6 flashcard-style quiz questions with short answers, based on: '+
+        (text||'(see attached photo)')+'. Reply with ONLY a JSON array of {"question":string,"answer":string}.', {images}
+      );
+      setResult(data.map((c,i)=>(i+1)+'. '+c.question+'\n   → '+c.answer).join('\n\n'));
     }
-
-    private void resetIfNewMonth() {
-        int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
-        int storedMonth = prefs.getInt(KEY_RESET_MONTH, -1);
-        if (currentMonth != storedMonth) {
-            prefs.edit()
-                    .putInt(KEY_CHAT_COUNT, 0)
-                    .putInt(KEY_IMAGE_COUNT, 0)
-                    .putInt(KEY_RESET_MONTH, currentMonth)
-                    .apply();
-        }
-    }
-
-    public SubscriptionTier getTier() {
-        // Owner accounts (see SessionManager) always resolve to PRO locally.
-        // The real grant should still be confirmed server-side on every AI call.
-        if (prefs.getBoolean(KEY_IS_OWNER_ACCOUNT, false)) {
-            return SubscriptionTier.PRO;
-        }
-        String name = prefs.getString(KEY_TIER, SubscriptionTier.FREE.name());
-        return SubscriptionTier.valueOf(name);
-    }
-
-    public void setTier(SubscriptionTier tier) {
-        prefs.edit().putString(KEY_TIER, tier.name()).apply();
-    }
-
-    public void markAsOwnerAccount(boolean isOwner) {
-        prefs.edit().putBoolean(KEY_IS_OWNER_ACCOUNT, isOwner).apply();
-    }
-
-    public boolean canSendChat() {
-        return prefs.getInt(KEY_CHAT_COUNT, 0) < getTier().monthlyChatLimit;
-    }
-
-    public boolean canSubmitImage() {
-        return prefs.getInt(KEY_IMAGE_COUNT, 0) < getTier().monthlyImageLimit;
-    }
-
-    public void recordChatUsed() {
-        prefs.edit().putInt(KEY_CHAT_COUNT, prefs.getInt(KEY_CHAT_COUNT, 0) + 1).apply();
-    }
-
-    public void recordImageUsed() {
-        prefs.edit().putInt(KEY_IMAGE_COUNT, prefs.getInt(KEY_IMAGE_COUNT, 0) + 1).apply();
-    }
-
-    public int getChatsRemaining() {
-        int limit = getTier().monthlyChatLimit;
-        if (limit == Integer.MAX_VALUE) return Integer.MAX_VALUE;
-        return Math.max(0, limit - prefs.getInt(KEY_CHAT_COUNT, 0));
-    }
-
-    public int getImagesRemaining() {
-        int limit = getTier().monthlyImageLimit;
-        if (limit == Integer.MAX_VALUE) return Integer.MAX_VALUE;
-        return Math.max(0, limit - prefs.getInt(KEY_IMAGE_COUNT, 0));
-    }
-
-    /**
-     * There's no real "AI capacity %" knob on an LLM API. The honest way to
-     * implement it is to translate the percentage into something the model
-     * API actually accepts -- here, a response-length cap -- so free users
-     * get shorter / simpler answers and Pro users get full-length ones.
-     * Your backend should call this (or an equivalent) before each AI
-     * request and pass the result as max_tokens.
-     */
-    public int getMaxTokensForCapacity(int baseMaxTokens) {
-        return Math.max(64, (baseMaxTokens * getTier().aiCapacityPercent) / 100);
-    }
+    u.chats++; if(file) u.images++; saveUsage(u);
+    document.getElementById('h_usage').textContent = usageLine();
+  }catch(e){
+    setResult(e.code==='not_granted' ? 'Please allow Ultron to use Claude to enable this feature.' : 'Something went wrong ('+e.code+'). Try again.');
+  }
+  btn.disabled = false;
 }
 
-
-// ============================================================
-// FILE: session/SessionManager.java
-// ============================================================
-package com.ultron.app.session;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import com.google.gson.Gson;
-import com.ultron.app.model.User;
-
-/**
- * Keeps the student signed in across app restarts, so the registration
- * screen only appears once. Call isLoggedIn() at launch to decide whether
- * to show the home screen or the sign-up flow.
- */
-public class SessionManager {
-
-    private static final String PREFS = "ultron_session";
-    private static final String KEY_TOKEN = "auth_token";
-    private static final String KEY_USER = "user_json";
-
-    private final SharedPreferences prefs;
-    private final Gson gson = new Gson();
-
-    public SessionManager(Context context) {
-        prefs = context.getApplicationContext()
-                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-    }
-
-    public void saveSession(String authToken, User user) {
-        prefs.edit()
-                .putString(KEY_TOKEN, authToken)
-                .putString(KEY_USER, gson.toJson(user))
-                .apply();
-    }
-
-    public boolean isLoggedIn() {
-        return prefs.getString(KEY_TOKEN, null) != null;
-    }
-
-    public String getAuthToken() {
-        return prefs.getString(KEY_TOKEN, null);
-    }
-
-    public User getUser() {
-        String json = prefs.getString(KEY_USER, null);
-        return json == null ? null : gson.fromJson(json, User.class);
-    }
-
-    public void logout() {
-        prefs.edit().clear().apply();
-    }
-
-    /**
-     * Whether to grant this account the "always premium" status the two
-     * app-owner accounts should get.
-     *
-     * Doing the check this way -- a hardcoded list inside the APK -- is
-     * only safe for a quick prototype: anyone can decompile the app, read
-     * this string, and sign up with a look-alike email, or simply patch
-     * this method to always return true. For a real release, move this
-     * check server-side: your backend verifies the signed-in account's
-     * *authenticated* email (via a Firebase Auth / Google Sign-In token,
-     * not a self-reported email field) against the owner list, and only
-     * the backend's response should ever set the tier to PRO.
-     */
-    public boolean isOwnerAccount(String verifiedEmail) {
-        if (verifiedEmail == null) return false;
-        return verifiedEmail.equalsIgnoreCase("bharadwajashok289@gmail.com")
-                || verifiedEmail.equalsIgnoreCase("manaskakkunuri55@gmail.com");
-    }
+function viewPlans(){
+  const t = getTier();
+  const cards = Object.keys(TIERS).map(key=>{
+    const p = TIERS[key];
+    const price = p.first===0 ? 'Free' : ('₹'+p.first+' first month, then ₹'+p.renew+'/mo');
+    const chats = p.chats===Infinity ? 'Unlimited' : p.chats;
+    const imgs = p.images===Infinity ? 'Unlimited' : p.images;
+    return '<div class="plan '+(key===t?'current':'')+'"><h3>'+key+(key===t?' (current)':'')+'</h3>' +
+      '<div class="price">'+price+'</div>' +
+      '<div class="muted">'+chats+' chats/mo · '+imgs+' images/mo · '+p.capacity+'% AI capacity</div>' +
+      (key!==t ? '<button class="ghost" style="margin-top:8px" onclick="choosePlan(\''+key+'\')">'+(p.first===0?'Switch to Free':'Pay & switch')+'</button>' : '') +
+      '</div>';
+  }).join('');
+  return shell('plans', '<div class="card"><h2>Plans</h2>'+cards+
+    '<p class="muted">After paying, your plan is activated manually by the Ultron team — this can take a little while.</p></div>');
+}
+function choosePlan(key){
+  const p = TIERS[key];
+  if(p.first===0){ setTier('FREE'); render(); return; }
+  const uri = 'upi://pay?pa=shreetulasi%40oksbi&pn=Ultron&tn=Ultron%20'+key+'%20subscription&am='+p.first+'&cu=INR';
+  window.location.href = uri;
+  alert('If your UPI app opened, complete the payment there. Your '+key+' plan will be activated once the team verifies it.');
 }
 
-
-// ============================================================
-// FILE: features/PomodoroTimer.java
-// ============================================================
-package com.ultron.app.features;
-
-import android.os.CountDownTimer;
-
-/**
- * A work/break Pomodoro timer. Default: 25 min focus, 5 min short break,
- * 15 min long break every 4th cycle -- all configurable.
- */
-public class PomodoroTimer {
-
-    public enum Phase { FOCUS, SHORT_BREAK, LONG_BREAK }
-
-    public interface Listener {
-        void onTick(long millisRemaining);
-        void onPhaseComplete(Phase justFinished, Phase next);
-    }
-
-    private final long focusMillis;
-    private final long shortBreakMillis;
-    private final long longBreakMillis;
-    private final int cyclesBeforeLongBreak;
-
-    private int completedFocusCycles = 0;
-    private Phase currentPhase = Phase.FOCUS;
-    private CountDownTimer timer;
-    private Listener listener;
-
-    public PomodoroTimer(int focusMinutes, int shortBreakMinutes, int longBreakMinutes,
-                          int cyclesBeforeLongBreak) {
-        this.focusMillis = focusMinutes * 60_000L;
-        this.shortBreakMillis = shortBreakMinutes * 60_000L;
-        this.longBreakMillis = longBreakMinutes * 60_000L;
-        this.cyclesBeforeLongBreak = cyclesBeforeLongBreak;
-    }
-
-    public PomodoroTimer() {
-        this(25, 5, 15, 4);
-    }
-
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
-
-    public void start() {
-        long duration = durationFor(currentPhase);
-        timer = new CountDownTimer(duration, 1000) {
-            @Override public void onTick(long millisUntilFinished) {
-                if (listener != null) listener.onTick(millisUntilFinished);
-            }
-
-            @Override public void onFinish() {
-                advancePhase();
-            }
-        };
-        timer.start();
-    }
-
-    public void stop() {
-        if (timer != null) timer.cancel();
-    }
-
-    private long durationFor(Phase phase) {
-        switch (phase) {
-            case FOCUS: return focusMillis;
-            case SHORT_BREAK: return shortBreakMillis;
-            case LONG_BREAK: return longBreakMillis;
-        }
-        return focusMillis;
-    }
-
-    private void advancePhase() {
-        Phase finished = currentPhase;
-
-        if (currentPhase == Phase.FOCUS) {
-            completedFocusCycles++;
-            currentPhase = (completedFocusCycles % cyclesBeforeLongBreak == 0)
-                    ? Phase.LONG_BREAK
-                    : Phase.SHORT_BREAK;
-        } else {
-            currentPhase = Phase.FOCUS;
-        }
-
-        if (listener != null) listener.onPhaseComplete(finished, currentPhase);
-        start();
-    }
-
-    public Phase getCurrentPhase() {
-        return currentPhase;
-    }
+let pomState = {phase:'Focus', secondsLeft:25*60, running:false, timerId:null, cycle:0};
+function fmt(s){ const m=Math.floor(s/60), ss=s%60; return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
+function viewPomodoro(){
+  return shell('pomodoro', '<div class="card"><h2 style="text-align:center">'+pomState.phase+'</h2>' +
+    '<div class="timer" id="pomDisplay">'+fmt(pomState.secondsLeft)+'</div>' +
+    '<div class="row"><button class="primary" onclick="pomToggle()">'+(pomState.running?'Pause':'Start')+'</button>' +
+    '<button class="ghost" onclick="pomReset()">Reset</button></div></div>');
 }
-
-
-// ============================================================
-// FILE: network/AiBackendClient.java
-// ============================================================
-package com.ultron.app.network;
-
-import android.net.Uri;
-
-import com.ultron.app.features.FlashcardManager.Flashcard;
-
-import java.io.File;
-import java.util.List;
-
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.http.Body;
-import retrofit2.http.Header;
-import retrofit2.http.Multipart;
-import retrofit2.http.POST;
-import retrofit2.http.Part;
-
-/**
- * All calls go to YOUR OWN backend server -- never call the AI provider's
- * API directly from the app. Reasons:
- *   1. Your AI provider API key must never ship inside an APK; it can be
- *      extracted in minutes from a decompiled build.
- *   2. Chat/image limits and the "AI capacity" per plan must be enforced
- *      somewhere a user can't tamper with (see SubscriptionManager).
- *   3. Content moderation and payment verification need a trusted server,
- *      not the phone.
- *
- * This interface is a starting contract for that backend; you'll build the
- * server (Node/Express, Django, Spring Boot, whatever you're comfortable
- * with) to implement these routes and call the AI provider from there.
- */
-public interface AiBackendClient {
-
-    class SolutionResponse {
-        public String steps;
-    }
-
-    class ModerationResponse {
-        public boolean flagged;
-    }
-
-    class ChatResponse {
-        public String reply;
-    }
-
-    @Multipart
-    @POST("flashcards/generate")
-    Call<List<Flashcard>> generateFlashcards(@Header("Authorization") String bearerToken,
-                                              @Part MultipartBody.Part image);
-
-    @Multipart
-    @POST("homework/solve")
-    Call<SolutionResponse> solveHomework(@Header("Authorization") String bearerToken,
-                                          @Part MultipartBody.Part image);
-
-    @POST("doubts/check-text")
-    Call<ModerationResponse> checkTextModeration(@Header("Authorization") String bearerToken,
-                                                  @Body String question);
-
-    @Multipart
-    @POST("doubts/check-image")
-    Call<ModerationResponse> checkImageModeration(@Header("Authorization") String bearerToken,
-                                                   @Part MultipartBody.Part image);
-
-    @POST("chat/send")
-    Call<ChatResponse> sendChat(@Header("Authorization") String bearerToken,
-                                 @Body String message);
-
-    @POST("subscription/verify-owner")
-    Call<ModerationResponse> verifyOwnerAccount(@Header("Authorization") String bearerToken);
-
-    // Helper: wraps an image Uri into the multipart body Retrofit needs.
-    // NOTE: for a content:// Uri (e.g. from the gallery picker) you must
-    // first copy it to a temp File via ContentResolver.openInputStream()
-    // -- new File(uri.getPath()) only works for file:// Uris. Shown
-    // simplified here; swap in your real Uri-to-File helper.
-    static MultipartBody.Part toMultipart(Uri imageUri) {
-        File file = new File(imageUri.getPath());
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
-        return MultipartBody.Part.createFormData("image", file.getName(), requestFile);
-    }
+function pomToggle(){
+  pomState.running = !pomState.running;
+  if(pomState.running){
+    pomState.timerId = setInterval(()=>{
+      pomState.secondsLeft--;
+      if(pomState.secondsLeft<=0){ pomAdvance(); }
+      const d=document.getElementById('pomDisplay'); if(d) d.textContent=fmt(pomState.secondsLeft);
+    },1000);
+  } else { clearInterval(pomState.timerId); }
+  render();
 }
-
-
-// ============================================================
-// FILE: features/DoubtModerationManager.java
-// ============================================================
-package com.ultron.app.features;
-
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import com.ultron.app.network.AiBackendClient;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-/**
- * Guards "Doubts" mode. Every text/image submission should be checked by
- * the backend BEFORE it's sent to the AI. If the check comes back
- * flagged, the student is locked out of this mode for 5 minutes.
- *
- * The actual classification (is this content something we shouldn't
- * answer) belongs on your backend, ideally via a proper moderation
- * endpoint rather than a client-side keyword list -- keyword lists are
- * both trivially bypassed and can't catch meaning the way a real
- * classifier can. This class just manages the lockout state once your
- * backend has made that call.
- */
-public class DoubtModerationManager {
-
-    private static final String PREFS = "ultron_doubts_moderation";
-    private static final String KEY_LOCKOUT_UNTIL = "lockout_until";
-    private static final long LOCKOUT_DURATION_MILLIS = 5 * 60 * 1000L;
-
-    private final SharedPreferences prefs;
-
-    public interface ModerationCallback {
-        void onResult(boolean flagged);
-        void onError(Exception e);
-    }
-
-    public DoubtModerationManager(Context context) {
-        prefs = context.getApplicationContext()
-                .getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-    }
-
-    public boolean isLockedOut() {
-        return System.currentTimeMillis() < prefs.getLong(KEY_LOCKOUT_UNTIL, 0);
-    }
-
-    public long getRemainingLockoutSeconds() {
-        long remaining = prefs.getLong(KEY_LOCKOUT_UNTIL, 0) - System.currentTimeMillis();
-        return Math.max(0, remaining / 1000);
-    }
-
-    private void applyLockout() {
-        prefs.edit()
-                .putLong(KEY_LOCKOUT_UNTIL, System.currentTimeMillis() + LOCKOUT_DURATION_MILLIS)
-                .apply();
-    }
-
-    /** Call with the result your backend's moderation check returned. */
-    public void handleModerationResult(boolean flaggedByBackend) {
-        if (flaggedByBackend) {
-            applyLockout();
-        }
-    }
-
-    /** Convenience wrapper: checks a text doubt against the backend and applies the lockout if needed. */
-    public void checkText(AiBackendClient client, String authToken, String text, ModerationCallback callback) {
-        client.checkTextModeration(authToken, text).enqueue(new Callback<AiBackendClient.ModerationResponse>() {
-            @Override
-            public void onResponse(Call<AiBackendClient.ModerationResponse> call,
-                                    Response<AiBackendClient.ModerationResponse> response) {
-                boolean flagged = response.isSuccessful() && response.body() != null && response.body().flagged;
-                handleModerationResult(flagged);
-                callback.onResult(flagged);
-            }
-
-            @Override
-            public void onFailure(Call<AiBackendClient.ModerationResponse> call, Throwable t) {
-                callback.onError(new Exception(t));
-            }
-        });
-    }
+function pomAdvance(){
+  if(pomState.phase==='Focus'){
+    pomState.cycle++;
+    pomState.phase = (pomState.cycle%4===0) ? 'Long Break' : 'Short Break';
+    pomState.secondsLeft = (pomState.phase==='Long Break') ? 15*60 : 5*60;
+  } else { pomState.phase='Focus'; pomState.secondsLeft=25*60; }
+  render();
 }
+function pomReset(){ clearInterval(pomState.timerId); pomState={phase:'Focus',secondsLeft:25*60,running:false,timerId:null,cycle:0}; render(); }
 
-
-// ============================================================
-// FILE: features/FlashcardManager.java
-// ============================================================
-package com.ultron.app.features;
-
-import android.net.Uri;
-
-import com.ultron.app.network.AiBackendClient;
-
-import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-/**
- * Turns a photo of a syllabus / textbook page into a set of flashcard
- * style questions, by sending the image to your backend (which relays it
- * to the AI provider along with a "generate flashcards" prompt).
- */
-public class FlashcardManager {
-
-    public static class Flashcard {
-        public String question;
-        public String answer;
-    }
-
-    public interface FlashcardCallback {
-        void onSuccess(List<Flashcard> flashcards);
-        void onFailure(Throwable t);
-    }
-
-    private final AiBackendClient client;
-
-    public FlashcardManager(AiBackendClient client) {
-        this.client = client;
-    }
-
-    public void generateFromImage(String authToken, Uri imageUri, FlashcardCallback callback) {
-        client.generateFlashcards(authToken, AiBackendClient.toMultipart(imageUri))
-                .enqueue(new Callback<List<Flashcard>>() {
-                    @Override
-                    public void onResponse(Call<List<Flashcard>> call, Response<List<Flashcard>> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            callback.onSuccess(response.body());
-                        } else {
-                            callback.onFailure(new RuntimeException("Server error: " + response.code()));
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<List<Flashcard>> call, Throwable t) {
-                        callback.onFailure(t);
-                    }
-                });
-    }
-}
-
-
-// ============================================================
-// FILE: features/HomeworkAssistManager.java
-// ============================================================
-package com.ultron.app.features;
-
-import android.net.Uri;
-
-import com.ultron.app.network.AiBackendClient;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-/**
- * Sends a photo of a homework problem to the backend and returns a
- * worked, step-by-step solution -- aimed at helping the student
- * understand the method, not just hand over a bare final answer.
- */
-public class HomeworkAssistManager {
-
-    public interface HomeworkCallback {
-        void onSuccess(String stepByStepSolution);
-        void onFailure(Throwable t);
-    }
-
-    private final AiBackendClient client;
-
-    public HomeworkAssistManager(AiBackendClient client) {
-        this.client = client;
-    }
-
-    public void solveFromImage(String authToken, Uri imageUri, HomeworkCallback callback) {
-        client.solveHomework(authToken, AiBackendClient.toMultipart(imageUri))
-                .enqueue(new Callback<AiBackendClient.SolutionResponse>() {
-                    @Override
-                    public void onResponse(Call<AiBackendClient.SolutionResponse> call,
-                                            Response<AiBackendClient.SolutionResponse> response) {
-                        if (response.isSuccessful() && response.body() != null) {
-                            callback.onSuccess(response.body().steps);
-                        } else {
-                            callback.onFailure(new RuntimeException("Server error: " + response.code()));
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<AiBackendClient.SolutionResponse> call, Throwable t) {
-                        callback.onFailure(t);
-                    }
-                });
-    }
-}
-
-
-// ============================================================
-// FILE: payment/PaymentManager.java
-// ============================================================
-package com.ultron.app.payment;
-
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.widget.Toast;
-
-import com.ultron.app.subscription.SubscriptionTier;
-
-/**
- * Launches a UPI payment for a subscription. Ultron doesn't process
- * payments itself -- it hands off to whichever UPI app the student has
- * installed (Google Pay, PhonePe, Paytm, BHIM...), and the money goes
- * straight to the configured VPA (Virtual Payment Address).
- *
- * Because there's no automatic webhook confirming a UPI deep-link payment
- * back to your backend, upgrades have to be applied manually once you see
- * the payment land -- see the note in SubscriptionManager#setTier and the
- * README for how to make that manual step quick for the two owner
- * accounts.
- */
-public class PaymentManager {
-
-    private static final String PAYEE_VPA = "shreetulasi@oksbi";
-    private static final String PAYEE_NAME = "Ultron";
-
-    public void launchUpiPayment(Context context, SubscriptionTier tier, boolean isFirstMonth) {
-        int amount = isFirstMonth ? tier.firstMonthPriceInr : tier.renewalPriceInr;
-        if (amount <= 0) return; // nothing to pay for FREE
-
-        String note = "Ultron " + tier.name() + " subscription";
-        Uri upiUri = new Uri.Builder()
-                .scheme("upi")
-                .authority("pay")
-                .appendQueryParameter("pa", PAYEE_VPA)
-                .appendQueryParameter("pn", PAYEE_NAME)
-                .appendQueryParameter("tn", note)
-                .appendQueryParameter("am", String.valueOf(amount))
-                .appendQueryParameter("cu", "INR")
-                .build();
-
-        Intent intent = new Intent(Intent.ACTION_VIEW, upiUri);
-        try {
-            context.startActivity(intent);
-            // TODO: record a "payment pending verification" entry (locally
-            // and/or via your backend) here so the owner accounts have a
-            // queue to check against, rather than relying on the raw UPI
-            // app history alone.
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(context, "No UPI app found. Please install Google Pay, PhonePe or similar.",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-}
+(function(){ const saved=localStorage.getItem('ultron_theme'); if(saved) document.documentElement.setAttribute('data-theme', saved); })();
+document.getElementById('themeBtn').onclick = () => {
+  const html=document.documentElement;
+  const next = html.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('ultron_theme', next);
+};
+render();
+</script>
+</body>
+</html>
