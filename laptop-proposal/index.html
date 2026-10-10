@@ -346,7 +346,7 @@ document.addEventListener('fullscreenchange',function(){
   const active=document.fullscreenElement===presentationColumn;
   fullscreenBtn.textContent=active?'⤢ Exit full screen':'⛶ Full screen';
   fullscreenBtn.setAttribute('aria-label',active?'Exit full-screen presentation':'Enter full-screen presentation');
-  if(active)notify('Full-screen presentation ready. Press F or Escape to exit.');
+  if(active)presentationColumn.scrollTop=0;
 });
 
 prevBtn.addEventListener('click',function(){showSlide(current-1);});
