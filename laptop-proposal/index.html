@@ -354,19 +354,19 @@ kbd{display:inline-block;min-width:20px;text-align:center;padding:2px 6px;border
 #presentationColumn:fullscreen .slide-actions{flex:none;margin-top:10px}
 #presentationColumn:fullscreen .slide h2:not(.cover-title){font-size:clamp(32px,3.7vw,54px)}
 #presentationColumn:fullscreen .section-card p{font-size:clamp(13px,1.1vw,16px)}
-#presentationColumn.clean-recording .presentation-top,#presentationColumn.clean-recording .slide-actions{display:none!important}
+#presentationColumn.recording-mode .presentation-top,#presentationColumn.recording-mode .slide-actions{display:none!important}
 body:has(#presentationColumn.recording-mode) .topbar,body:has(#presentationColumn.recording-mode) .voice-state{display:none!important}
-#presentationColumn.clean-recording:fullscreen{padding:0;overflow:hidden}
-#presentationColumn.clean-recording:fullscreen:before{content:"";position:fixed;z-index:10000;top:0;left:0;height:3px;width:var(--deck-progress,0%);background:linear-gradient(90deg,#a991c0,#b4c2aa,#cba1ac);box-shadow:0 0 12px rgba(185,162,207,.24)}
-#presentationColumn.clean-recording:fullscreen .slide,#presentationColumn.clean-recording:fullscreen .slide.cover-slide{
+#presentationColumn.recording-mode:fullscreen{padding:0;overflow:hidden}
+#presentationColumn.recording-mode:fullscreen:before{content:"";position:fixed;z-index:10000;top:0;left:0;height:3px;width:var(--deck-progress,0%);background:linear-gradient(90deg,#a991c0,#b4c2aa,#cba1ac);box-shadow:0 0 12px rgba(185,162,207,.24)}
+#presentationColumn.recording-mode:fullscreen .slide,#presentationColumn.recording-mode:fullscreen .slide.cover-slide{
   width:100%;height:100vh;max-height:100vh;min-height:0;border:0;border-radius:0;padding:clamp(26px,4vw,66px) clamp(30px,5vw,86px);
   box-shadow:none;overflow-y:auto;background:radial-gradient(ellipse at 7% 4%,rgba(130,101,151,.15),transparent 34%),radial-gradient(ellipse at 96% 92%,rgba(110,128,104,.08),transparent 34%),#1b1923
 }
-#presentationColumn.clean-recording:fullscreen .slide-footer{margin-top:20px}
-#presentationColumn.clean-recording:fullscreen .cover-layout{min-height:min(65vh,670px)}
-#presentationColumn.clean-recording:fullscreen .cover-art{min-height:350px}
-#presentationColumn.clean-recording:fullscreen .cover-title{font-size:clamp(48px,6.3vw,86px)!important}
-#presentationColumn.clean-recording .presentation-top{display:none!important}
+#presentationColumn.recording-mode:fullscreen .slide-footer{margin-top:20px}
+#presentationColumn.recording-mode:fullscreen .cover-layout{min-height:min(65vh,670px)}
+#presentationColumn.recording-mode:fullscreen .cover-art{min-height:350px}
+#presentationColumn.recording-mode:fullscreen .cover-title{font-size:clamp(48px,6.3vw,86px)!important}
+#presentationColumn.recording-mode .presentation-top{display:none!important}
 .all-view{display:none!important}
 @media(max-width:1100px){
   .presentation-top{align-items:flex-start;flex-wrap:wrap}
@@ -391,8 +391,8 @@ body:has(#presentationColumn.recording-mode) .topbar,body:has(#presentationColum
   #presentationColumn:fullscreen .presentation-top{display:flex;flex-wrap:wrap}
   #presentationColumn:fullscreen .slide{height:calc(100vh - 170px);max-height:calc(100vh - 170px)}
   #presentationColumn:fullscreen .slide.cover-slide{height:calc(100vh - 170px);max-height:calc(100vh - 170px)}
-  #presentationColumn.clean-recording:fullscreen .slide,#presentationColumn.clean-recording:fullscreen .slide.cover-slide{height:100vh;max-height:100vh;padding:20px 17px}
-  #presentationColumn.clean-recording:fullscreen .cover-art{min-height:275px}
+  #presentationColumn.recording-mode:fullscreen .slide,#presentationColumn.recording-mode:fullscreen .slide.cover-slide{height:100vh;max-height:100vh;padding:20px 17px}
+  #presentationColumn.recording-mode:fullscreen .cover-art{min-height:275px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 @media print{
@@ -415,8 +415,8 @@ body:has(#presentationColumn.recording-mode) .topbar,body:has(#presentationColum
 
 /* Keep the full-screen toolbar and slide within the viewport when controls are visible. */
 #presentationColumn:fullscreen .slide,#presentationColumn:fullscreen .slide.cover-slide{height:calc(100vh - 180px);max-height:calc(100vh - 180px)}
-#presentationColumn.clean-recording:fullscreen .slide,#presentationColumn.clean-recording:fullscreen .slide.cover-slide{height:100vh;max-height:100vh}
-@media(max-width:760px){#presentationColumn:fullscreen .slide,#presentationColumn:fullscreen .slide.cover-slide{height:calc(100vh - 195px);max-height:calc(100vh - 195px)}#presentationColumn.clean-recording:fullscreen .slide,#presentationColumn.clean-recording:fullscreen .slide.cover-slide{height:100vh;max-height:100vh}}
+#presentationColumn.recording-mode:fullscreen .slide,#presentationColumn.recording-mode:fullscreen .slide.cover-slide{height:100vh;max-height:100vh}
+@media(max-width:760px){#presentationColumn:fullscreen .slide,#presentationColumn:fullscreen .slide.cover-slide{height:calc(100vh - 195px);max-height:calc(100vh - 195px)}#presentationColumn.recording-mode:fullscreen .slide,#presentationColumn.recording-mode:fullscreen .slide.cover-slide{height:100vh;max-height:100vh}}
 </style>
 </head>
 <body>
