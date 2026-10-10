@@ -1,10 +1,10 @@
 # Sources, live listing checks and image links
 
-Price checks below were observed on **11 October 2026**. Prices can change by stock, pincode, seller, coupon and bank-card eligibility. They are not guaranteed checkout amounts.
+Price snapshots below were checked on **11 October 2026**. A displayed price is not a guaranteed checkout total; seller, delivery pincode, stock, coupons and payment eligibility may change it.
 
 ## HP OmniBook 3 14-hz0026QU
 - Flipkart listing for the exact model (14-hz0026QU / D7NL1PA#ACJ): https://www.flipkart.com/hp-omnibook-3-2k-wuxga-snapdragon-x-16-gb-512-gb-ssd-windows-11-home-14-hz0026qu-laptop/p/itm872e11852f533
-- Price observed on the result: ₹59,990 with a ₹56,990 offer price shown. Confirm the product page and final checkout total directly.
+- Price shown on the opened listing: ₹89,999; seller displayed as Getbestdeal; delivery location was unset. Confirm delivery availability and final checkout price directly.
 - HP India OmniBook 3 product family: https://www.hp.com/in-en/laptops-and-2-in-1s/omnibook-3-ai-pc.html
 - Amazon India search for target model: https://www.amazon.in/s?k=HP+OmniBook+3+14-hz0026QU
 - Exact SKU search: https://www.google.com/search?q=HP+OmniBook+3+14-hz0026QU+D7NL1PA+India
@@ -13,7 +13,7 @@ Price checks below were observed on **11 October 2026**. Prices can change by st
 
 ## ASUS Vivobook 16 X1607QA-MB049WS
 - Official India product page: https://in.store.asus.com/ai-powered-light-weight-laptop-asus-vivobook-16-x1607qa-mb049ws.html
-- Price observed on the official product page: ₹61,990. Confirm directly before purchase.
+- Special price shown on the opened official page: ₹68,990. Confirm directly before purchase; the page also shows selected-offer terms.
 - Amazon India search: https://www.amazon.in/s?k=ASUS+Vivobook+16+X1607QA-MB049WS
 - Google Images: https://www.google.com/search?tbm=isch&q=ASUS+Vivobook+16+X1607QA-MB049WS
 - Product photo: https://in.store.asus.com/media/catalog/product/x/1/x1607qa-mb049ws_4_.jpg
@@ -24,7 +24,7 @@ Price checks below were observed on **11 October 2026**. Prices can change by st
 - GitHub Pages documentation: https://docs.github.com/en/pages
 
 ## Interpretation
-- The HP result's shown ₹56,990 offer is about ₹5,000 below the ASUS official-store price observed the same day, but the actual checkout comparison can differ.
-- The HP specification details in the presentation are based on listings for model 14-hz0026QU. The product-family page includes other OmniBook configurations, so the exact model, display, battery, ports, warranty and included software should be confirmed against the invoice and seller listing.
-- Android Studio's current Windows ARM support statement is a genuine project risk. A physical phone can replace emulator use, but it does not remove the IDE's stated support limitation.
+- On the pages checked, ASUS's ₹68,990 special price is about ₹21,009 below the ₹89,999 shown for the selected HP listing. This does not prove ASUS is the right purchase: price, seller, delivery and offers can change, and the HP is lighter with a listed 60 Wh battery while the ASUS has a 16-inch screen and USB4.
+- The HP product-family site includes different OmniBook configurations. Match the exact SKU, processor, screen, battery, ports, warranty and included software against the seller listing and invoice.
+- Android Studio's current requirements say Windows PCs with ARM-based CPUs are not supported. A physical phone can replace emulator use, but it does not remove this IDE support limitation.
 - Payment examples in the slides are arithmetic only, not a representation of any particular bank EMI offer.
