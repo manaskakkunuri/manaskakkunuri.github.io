@@ -127,6 +127,27 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offse
 .slide-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:25px;border-top:1px solid #3b3847;padding-top:14px;color:#aaa3b4;font-size:11px}
 .slide-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
 .slide-actions .left,.slide-actions .right{display:flex;gap:8px}
+#fullscreenBtn{white-space:nowrap}
+#presentationColumn:fullscreen{
+  width:100vw;height:100vh;max-width:none;min-width:0;margin:0;
+  padding:clamp(12px,2vw,28px);overflow:auto;display:flex;flex-direction:column;
+  color:var(--text);
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(108,91,130,.14),transparent 40%),
+    radial-gradient(ellipse at 96% 68%,rgba(91,105,91,.10),transparent 37%),
+    var(--bg)
+}
+#presentationColumn:fullscreen .presentation-top{width:100%;margin:0 0 12px;flex:none}
+#presentationColumn:fullscreen .presentation-top .slide-count:last-child{font-size:11px}
+#presentationColumn:fullscreen .slide{
+  flex:1;min-height:0;height:calc(100vh - 125px);max-height:calc(100vh - 125px);
+  overflow-y:auto;border-radius:18px;padding:clamp(18px,3vw,44px)
+}
+#presentationColumn:fullscreen .slide-actions{flex:none;margin-top:10px}
+#presentationColumn:fullscreen .slide h2{font-size:clamp(30px,4vw,54px)}
+#presentationColumn:fullscreen .slide p{max-width:82ch}
+#presentationColumn:fullscreen .section-card p{font-size:clamp(14px,1.2vw,17px)}
+#presentationColumn:fullscreen #fullscreenBtn{background:#51475f;border-color:#756886}
 .all-view{display:none!important}
 .closing-video-box{border:1px dashed #635b70;padding:18px;border-radius:15px;background:#272531;margin-top:16px}
 .closing-video-box video{width:100%;max-height:430px;background:#14131a;border-radius:12px;margin-top:12px}
@@ -183,7 +204,7 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--sage);outline-offse
   <div class="deck-layout">
     <aside class="sidebar" aria-label="Presentation slide navigation"><div class="side-heading"><span>Contents</span><span id="navTotal">15 slides</span></div><nav class="side-nav" id="sideNav"></nav></aside>
     <section class="main-column" id="presentationColumn" aria-live="polite">
-      <div class="presentation-top"><span class="slide-count" id="slideCount">Slide 1 of 15</span><div class="progress" aria-label="Presentation progress"><span id="progressBar"></span></div><span class="slide-count">Use ← → keys</span></div>
+      <div class="presentation-top"><span class="slide-count" id="slideCount">Slide 1 of 15</span><div class="progress" aria-label="Presentation progress"><span id="progressBar"></span></div><button class="btn" id="fullscreenBtn" type="button" aria-label="Enter full-screen presentation" title="Press F to toggle full screen">⛶ Full screen</button></div>
       <article class="slide" id="currentSlide"></article>
       <div class="slide-actions"><div class="left"><button class="btn" id="prevBtn" type="button">← Previous</button></div><div class="right"><button class="btn" id="nextBtn" type="button">Next →</button></div></div>
     </section>
@@ -302,6 +323,32 @@ function showSlide(index){
 function toggleAll(force){isAll=typeof force==='boolean'?force:!isAll;if(isAll){presentationColumn.style.display='none';allView.classList.add('active');if(!allView.dataset.built){allView.innerHTML=slides.map(function(s,i){return '<article class="slide" id="all-slide-'+i+'"></article>';}).join('');slides.forEach(function(s,i){renderSlide(allView.children[i],i,true);});allView.dataset.built='1';}allBtn.textContent='Return to slideshow';window.scrollTo({top:0,behavior:'smooth'});}else{allView.classList.remove('active');presentationColumn.style.display='block';allBtn.textContent='View all slides';showSlide(current);window.scrollTo({top:0,behavior:'smooth'});}}
 function notify(message){toast.textContent=message;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){toast.classList.remove('show');},2400);}
 
+const fullscreenBtn=document.getElementById('fullscreenBtn');
+async function toggleFullscreen(){
+  if(!document.fullscreenElement){
+    if(!presentationColumn.requestFullscreen){
+      notify('Full screen is not supported in this browser. Try F11 instead.');
+      return;
+    }
+    try{
+      await presentationColumn.requestFullscreen();
+    }catch(error){
+      notify('Full screen was blocked. Try clicking the Full screen button again, or press F11.');
+    }
+  }else if(document.fullscreenElement===presentationColumn){
+    try{await document.exitFullscreen();}catch(error){notify('Press Escape to leave full screen.');}
+  }else{
+    try{await document.exitFullscreen();}catch(error){notify('Press Escape to leave the current full-screen view.');}
+  }
+}
+fullscreenBtn.addEventListener('click',toggleFullscreen);
+document.addEventListener('fullscreenchange',function(){
+  const active=document.fullscreenElement===presentationColumn;
+  fullscreenBtn.textContent=active?'⤢ Exit full screen':'⛶ Full screen';
+  fullscreenBtn.setAttribute('aria-label',active?'Exit full-screen presentation':'Enter full-screen presentation');
+  if(active)notify('Full-screen presentation ready. Press F or Escape to exit.');
+});
+
 prevBtn.addEventListener('click',function(){showSlide(current-1);});
 nextBtn.addEventListener('click',function(){if(current<slides.length-1)showSlide(current+1);else notify('End of presentation, old bean.');});
 document.getElementById('voiceReplayBtn').addEventListener('click',function(){speakSlide(current);});
@@ -328,6 +375,11 @@ document.addEventListener('keydown',function(event){
     return;
   }
   if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
+  if(event.key.toLowerCase()==='f'){
+    event.preventDefault();
+    toggleFullscreen();
+    return;
+  }
   if(event.key==='ArrowRight'||event.key==='PageDown'){
     event.preventDefault();
     if(current<slides.length-1)showSlide(current+1);
