@@ -1,28 +1,31 @@
 # Laptop Proposal — Interactive Browser Presentation
 
-This 17-slide presentation lives at `laptop-proposal/index.html` in the existing `manaskakkunuri.github.io` repository. It remains separate from the existing Ultron home page.
+This 17-slide presentation lives at `laptop-proposal/index.html` in the existing `manaskakkunuri.github.io` repository. It is separate from the existing Ultron home page.
 
 ## What it includes
-- A custom low-glare twilight theme and a code-editor-inspired cover.
-- A decision brief up front, followed by learning goals, laptop options, a side-by-side comparison, Java/software-engineering workflow, Ultron project ideas, Windows ARM compatibility risk, a 30-day plan, budget checks and a respectful closing request.
-- Full-screen presentation mode.
-- Clean recording view: press `G` to hide controls; use `Space` or the arrow keys to move between slides.
-- Browser narration: `R` replays the current slide, `M` toggles voice, and `F` toggles full screen. A British-English voice is selected when the browser provides one.
-- Print / Save PDF button with one slide per landscape page.
-- Live product/source links for HP, ASUS, Qualcomm and Android Studio.
+- Low-glare twilight design and a custom code-editor-inspired cover.
+- Exact target model named as **HP OmniBook 3 Snapdragon X Chipset Edition**; listed model 14-hz0026QU / part D7NL1PA#ACJ.
+- A decision brief explaining a potential deal, followed by hardware comparison, Java/software-engineering workflow, Ultron project ideas, Windows ARM compatibility risk, a 30-day plan, budget checks and a respectful closing request.
+- Full-screen mode plus a clean recording view. Press `G` to hide controls and use `Space` or arrows to move slides.
+- Narration: `R` replays the current slide, `M` toggles voice, and `F` toggles full screen. A British-English voice is selected when available in the browser.
+- Print / Save PDF button (landscape, one slide per page).
+- Product and source links for HP, ASUS, Qualcomm and Android Studio.
 - Optional closing video at `laptop-proposal/assets/gemini_closing.mp4`.
-- No third-party JavaScript libraries and no build step.
+- No third-party JavaScript libraries or build step.
 
 ## Intended website URL
 https://manaskakkunuri.github.io/laptop-proposal/
 
-The URL is available once GitHub Pages is enabled and publishing from the existing user-site repository. If it does not load, check repository Settings → Pages and confirm it is publishing from the `main` branch and root folder.
+This URL requires GitHub Pages to be enabled and publishing from the `main` branch and root folder of the existing user-site repository.
 
-## Accuracy and financial notes
-- Page prices checked on 11 October 2026: the selected Flipkart listing for HP OmniBook 3 14-hz0026QU displayed ₹89,999 from seller Getbestdeal with delivery location unset. ASUS India store displayed a special price of ₹68,990 for X1607QA-MB049WS. These are snapshots; seller, pincode, stock, coupons and bank eligibility may change them.
-- The HP cover/product photo is from a related OmniBook 3 Snapdragon X model and is marked illustrative. Verify the exact SKU and invoice details.
-- Google’s Android Studio requirements currently state that Windows PCs with ARM-based CPUs are not supported. Treat this as a material compatibility risk; test the exact development workflow or compare a supported alternative before purchasing.
-- The equal-payment figures are arithmetic examples, not EMI offers. A parent or guardian should review payment terms and decide affordability without pressure.
-- Product images are hotlinked and may fail to load; product and image-search links remain available as alternatives.
-- GitHub Pages content is public. Do not add credentials, API keys or private family financial information.
-- Compress an optional video before uploading it to avoid an unnecessarily large repository.
+## Price caveat — important
+The Flipkart listing for the exact HP model has surfaced a displayed list/reference price of ₹1,26,011 and an offer snapshot stating “Buy at ₹56,990” after promotions. However, the same product page opened separately displayed ₹89,999 for seller Getbestdeal with the delivery location unset. Treat ₹56,990 as a deal to verify in the actual cart, not a guaranteed current price. Seller, pincode, coupons, bank eligibility and stock can change the final amount.
+
+ASUS's official store displayed ₹68,990 special price against ₹1,26,990 MRP for Vivobook 16 X1607QA-MB049WS. Verify both listings directly; prices are snapshots, not promises.
+
+## Technical and financial caveats
+- The HP product-family photo is from a related OmniBook 3 Snapdragon X configuration, not confirmed as the exact Indian SKU. Check the precise model, port/battery/display details, seller, invoice and warranty.
+- Google’s Android Studio requirements currently state that Windows PCs with ARM-based CPUs are not supported. Test the full development workflow or compare a supported alternative before buying.
+- Equal-payment numbers are simple arithmetic examples, not EMI quotes. A parent/guardian should review the repayment terms and decide affordability without pressure.
+- GitHub Pages content is public. Do not add credentials, API keys or private financial information.
+- Compress optional videos before uploading to avoid a large repository.
