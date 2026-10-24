@@ -75,6 +75,10 @@ class ClaimIn(BaseModel):
     utr: str = Field(pattern=r"^\d{12}$")
 
 
+class ApproveIn(BaseModel):
+    note: str = Field(default="", max_length=500)
+
+
 def active_plan(db: Session, user_id: int) -> str:
     sub = db.scalar(select(Subscription).where(Subscription.user_id == user_id))
     now = datetime.now(timezone.utc)
@@ -95,12 +99,22 @@ def use_quota(db: Session, user_id: int, kind: str, limit: int) -> tuple[int, in
     if used >= limit:
         reset = "next month" if kind == "image" else "tomorrow"
         raise HTTPException(429, f"{kind.title()} limit reached for your {active_plan(db, user_id).title()} plan. Resets {reset}.")
+    return used + 1, limit
+
+
+def record_usage(db: Session, user_id: int, kind: str) -> None:
+    now = datetime.now(timezone.utc)
+    period_key = now.strftime("%Y-%m") if kind == "image" else now.strftime("%Y-%m-%d")
+    row = db.scalar(select(UsageCounter).where(
+        UsageCounter.user_id == user_id,
+        UsageCounter.period_key == period_key,
+        UsageCounter.kind == kind,
+    ))
     if row:
         row.count += 1
     else:
         db.add(UsageCounter(user_id=user_id, period_key=period_key, kind=kind, count=1))
     db.commit()
-    return used + 1, limit
 
 
 def parse_tinyfish_answer(payload: object) -> str:
@@ -153,7 +167,7 @@ async def gemini_answer(prompt: str, mode: str) -> str:
         "quiz": "Create a short quiz and put the answer key at the end.",
     }
     body = {
-        "system_instruction": {"parts": [{"text": "You are ULTRON, a supportive and accurate school study tutor. " + instructions[mode] + " If uncertain, say so. Format for readability."}]},
+        "systemInstruction": {"parts": [{"text": "You are ULTRON, a supportive and accurate school study tutor. " + instructions[mode] + " If uncertain, say so. Format for readability."}]},
         "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.4, "maxOutputTokens": 1800},
     }
@@ -252,6 +266,7 @@ async def ai_answer(data: AskIn, db: Session = Depends(get_db), user: User = Dep
             task.cancel()
         await asyncio.gather(*pending, return_exceptions=True)
     elapsed_ms = int((time.perf_counter() - started) * 1000)
+    record_usage(db, user.id, "ai")
     write_audit(db, user.id, "ai.answer", "ai_request", None, f"provider={winner['provider']}; elapsed_ms={elapsed_ms}")
     db.commit()
     return {"answer": winner["answer"], "provider": winner["provider"], "elapsed_ms": elapsed_ms,
@@ -296,6 +311,7 @@ async def generate_image(data: ImageIn, db: Session = Depends(get_db), user: Use
                 break
     if not image_data:
         raise HTTPException(502, "The image provider returned no image data.")
+    record_usage(db, user.id, "image")
     write_audit(db, user.id, "image.generated", "image", None, f"plan={plan}")
     db.commit()
     return {"image_base64": image_data, "mime_type": mime_type, "prompt": data.prompt,
@@ -360,7 +376,7 @@ def independently_verify_payment(
 @router.post("/admin/subscriptions/{claim_id}/approve")
 def approve_subscription_claim(
     claim_id: int,
-    note: str = "",
+    data: ApproveIn,
     db: Session = Depends(get_db),
     reviewer: User = Depends(payment_reviewer),
 ):
@@ -385,7 +401,7 @@ def approve_subscription_claim(
         sub.updated_at = now
     claim.status = "approved"
     claim.reviewed_by = reviewer.id
-    claim.review_note = note.strip()[:500] or None
+    claim.review_note = data.note.strip()[:500] or None
     claim.reviewed_at = now
     write_audit(db, reviewer.id, "subscription.activated", "subscription", claim.user_id, f"plan={claim.plan}; claim_id={claim.id}")
     db.commit()
