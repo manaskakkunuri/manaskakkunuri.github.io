@@ -1,7 +1,6 @@
 """ULTRON premium features: race-first AI, subscriptions, image studio, and admin APIs."""
 from __future__ import annotations
 
-import asyncio
 import base64
 import hmac
 import os
@@ -22,8 +21,6 @@ from main import (
 )
 
 router = APIRouter()
-TINYFISH_API_KEY = os.getenv("TINYFISH_API_KEY", "").strip()
-TINYFISH_SEARCH_URL = os.getenv("TINYFISH_SEARCH_URL", "https://api.search.tinyfish.ai").strip()
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_STUDIO_API_KEY") or "").strip()
 GEMINI_TEXT_MODEL = os.getenv("GEMINI_TEXT_MODEL", "gemini-3.8-flash").strip()
 GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-nano-banana-2.1").strip()
@@ -117,45 +114,6 @@ def record_usage(db: Session, user_id: int, kind: str) -> None:
     db.commit()
 
 
-def parse_tinyfish_answer(payload: object) -> str:
-    if isinstance(payload, dict):
-        results = payload.get("results") or payload.get("data") or payload.get("organic_results") or []
-        if isinstance(results, dict):
-            results = results.get("results") or results.get("items") or []
-        if isinstance(results, list):
-            lines = []
-            for item in results[:5]:
-                if not isinstance(item, dict):
-                    continue
-                title = str(item.get("title") or item.get("name") or "Web result").strip()
-                snippet = str(item.get("snippet") or item.get("description") or item.get("content") or "").strip()
-                url = str(item.get("url") or item.get("link") or "").strip()
-                if snippet or url:
-                    lines.append(f"{title}\n{snippet}\n{url}".strip())
-            if lines:
-                return "Live web research from TinyFish:\n\n" + "\n\n".join(lines)
-        for key in ("answer", "text", "content", "message", "output"):
-            value = payload.get(key)
-            if isinstance(value, str) and value.strip():
-                return value.strip()
-    if isinstance(payload, str) and payload.strip():
-        return payload.strip()
-    raise RuntimeError("TinyFish returned no usable answer")
-
-
-async def tinyfish_answer(prompt: str, mode: str) -> str:
-    if not TINYFISH_API_KEY:
-        raise RuntimeError("TinyFish is not configured")
-    async with httpx.AsyncClient(timeout=httpx.Timeout(12.0, connect=4.0)) as client:
-        response = await client.get(
-            TINYFISH_SEARCH_URL,
-            params={"query": f"{prompt} (student learning, {mode})"},
-            headers={"X-API-Key": TINYFISH_API_KEY, "Accept": "application/json"},
-        )
-        response.raise_for_status()
-        return parse_tinyfish_answer(response.json())
-
-
 async def gemini_answer(prompt: str, mode: str) -> str:
     if not GEMINI_API_KEY:
         raise RuntimeError("Google AI Studio is not configured")
@@ -238,38 +196,20 @@ async def ai_answer(data: AskIn, db: Session = Depends(get_db), user: User = Dep
     used, limit = use_quota(db, user.id, "ai", AI_DAILY_LIMITS[plan])
     prompt = data.prompt.strip()
     started = time.perf_counter()
-    tasks = {
-        asyncio.create_task(tinyfish_answer(prompt, data.mode)): "tinyfish",
-        asyncio.create_task(gemini_answer(prompt, data.mode)): "google_ai_studio",
-    }
-    failures = []
-    winner = None
-    pending = set(tasks)
     try:
-        while pending:
-            done, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_COMPLETED)
-            for task in done:
-                provider = tasks[task]
-                try:
-                    answer = task.result()
-                    if answer.strip():
-                        winner = {"answer": answer, "provider": provider}
-                        break
-                except Exception as exc:
-                    failures.append(f"{provider}: {type(exc).__name__}")
-            if winner:
-                break
-        if not winner:
-            raise HTTPException(503, "No AI provider returned a usable answer. Check the backend API keys and provider configuration.")
-    finally:
-        for task in pending:
-            task.cancel()
-        await asyncio.gather(*pending, return_exceptions=True)
+        answer = await gemini_answer(prompt, data.mode)
+    except Exception as exc:
+        # Never silently fall back to another provider. Google AI Studio is the
+        # only configured AI provider for ULTRON.
+        raise HTTPException(
+            503,
+            "Google AI Studio could not return an answer. Check GEMINI_API_KEY, model access, and backend logs.",
+        ) from exc
     elapsed_ms = int((time.perf_counter() - started) * 1000)
     record_usage(db, user.id, "ai")
-    write_audit(db, user.id, "ai.answer", "ai_request", None, f"provider={winner['provider']}; elapsed_ms={elapsed_ms}")
+    write_audit(db, user.id, "ai.answer", "ai_request", None, f"provider=google_ai_studio; elapsed_ms={elapsed_ms}")
     db.commit()
-    return {"answer": winner["answer"], "provider": winner["provider"], "elapsed_ms": elapsed_ms,
+    return {"answer": answer, "provider": "google_ai_studio", "elapsed_ms": elapsed_ms,
             "usage": {"used_today": used, "daily_limit": limit, "plan": plan}}
 
 
