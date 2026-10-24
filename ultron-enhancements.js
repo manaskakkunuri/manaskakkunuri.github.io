@@ -41,7 +41,7 @@ window.ultronGo=function(page){
  if(page==="admin"||page==="plans"||page==="images")document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.featurePage===page));
 };
 window.ultronToggleMore=function(force){const el=$("ultronMoreMenu");if(!el)return;el.classList.toggle("open",force===undefined?!el.classList.contains("open"):!!force)};
-async function api(path,options){if(typeof window.apiRequest==="function")return window.apiRequest(path,options||{});throw new Error("Please sign in to ULTRON first.");}
+async function api(path,options){if(window.ULTRON_DEMO_MODE)throw new Error("Presentation demo: live accounts, AI images, subscriptions, and admin actions are disabled until the backend is deployed.");if(typeof window.apiRequest==="function")return window.apiRequest(path,options||{});throw new Error("Please sign in to ULTRON first.");}
 const originalEnter=window.enterApp;
 if(typeof originalEnter==="function")window.enterApp=function(){addPages();originalEnter();ultronSyncAdminVisibility();};
 function ultronSyncAdminVisibility(){const account=(typeof state!=="undefined"&&state.account)||null;const allowed=["ashokbharadwaj@gmail.com","manaskakkunuri55@gmail.com"];const can=!!(account&&allowed.includes(String(account.email||"").toLowerCase())&&account.role==="super_admin"&&account.email_verified);const adminNav=document.querySelectorAll('[data-feature-page="admin"]');adminNav.forEach(n=>n.classList.toggle("hidden",!can));if($("moreAdminButton"))$("moreAdminButton").classList.toggle("hidden",!can);}
