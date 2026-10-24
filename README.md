@@ -42,3 +42,10 @@ The frontend reads its API base URL from the `ultron-api-base-url` meta tag near
 
 ## Important limitations
 This is a foundation, not a production-complete service. Add rate limiting, verification and reset emails, robust migrations, automated security/integration tests, real-time chat transport, secure file uploads, subscription lifecycle logic, and deployment monitoring before launch.
+
+
+## Presentation demo and backend deployment
+- The login page includes **Explore presentation demo** for a clearly labelled, local-only walkthrough. It does not authenticate a user, create an account, or unlock real AI, billing, image generation, or admin actions. The tutor's sample answer is explicitly marked as sample content.
+- A Render deployment blueprint is available in `render.yaml`. In Render, create a Blueprint from this repository and configure the required secret values in Render's environment settings; never commit provider keys.
+- After Render creates the API, set the `ultron-api-base-url` meta tag in `index.html` to the exact HTTPS service URL, then confirm `/health` returns `{"status":"ok","service":"ultron-api"}`. The configured CORS origin must match the GitHub Pages origin exactly.
+- The included SQLite URL is only a quick-start configuration. SQLite on an ephemeral free service is not durable production storage; configure managed PostgreSQL and backups before real accounts, payment claims, or school use. A Render service and provider secrets must be provisioned by an account owner before live backend functionality can work.
