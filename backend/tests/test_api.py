@@ -45,7 +45,14 @@ def test_register_login_and_task_xp_once():
 
 
 def test_bad_utr_rejected():
-    response = client.post("/payments/upi-claims", json={
+    email = f"utr-{uuid.uuid4().hex}@example.com"
+    password = "correct-horse-battery-staple"
+    client.post("/auth/register", json={
+        "email": email, "display_name": "UTR Test", "password": password
+    })
+    login = client.post("/auth/login", json={"email": email, "password": password})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    response = client.post("/payments/upi-claims", headers=headers, json={
         "plan": "basic", "utr": "123", "amount_paise": 9900
     })
     assert response.status_code == 422
