@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#635BFF">
 <meta name="ultron-api-base-url" content="">
-<title>Ultron — Study Smarter</title>
+<title>ULTRON — Study Smarter</title>
+<link rel="stylesheet" href="ultron-enhancements.css">
 
 <style>
 :root{
@@ -1187,7 +1188,7 @@ main{
 
 
         <div class="auth-note">
-          Your account is stored locally on this device.
+          Your account is protected by the ULTRON backend. Never share your password or API keys.
         </div>
 
       </div>
@@ -2412,6 +2413,7 @@ document
       }
       state.account = {
         id: auth.user.id, name: auth.user.display_name, email: auth.user.email,
+        role: auth.user.role, email_verified: auth.user.email_verified,
         className, rollNo, section, subject
       };
       state.loggedIn = true;
@@ -2457,6 +2459,8 @@ document
         id: auth.user.id,
         name: auth.user.display_name,
         email: auth.user.email,
+        role: auth.user.role,
+        email_verified: auth.user.email_verified,
         className: state.account?.className || "",
         rollNo: state.account?.rollNo || "",
         section: state.account?.section || "",
@@ -3199,69 +3203,13 @@ Rules:
 ========================================================= */
 
 async function callAI(request){
-
-  /*
-    Connect your real backend here.
-
-    Example:
-
-    window.ULTRON_AI = async function(request){
-
-      const response = await fetch(
-        "/api/ai",
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify(request)
-        }
-      );
-
-      const data =
-        await response.json();
-
-      return data.answer;
-    };
-
-  */
-
-
-  if(
-    typeof window.ULTRON_AI===
-    "function"
-  ){
-
-    return await window.ULTRON_AI(
-      request
-    );
-
-  }
-
-
-  if(
-    typeof window.claude!=="undefined" &&
-    typeof window.claude.use===
-      "function"
-  ){
-
-    const result=
-      await window.claude.use(
-        request
-      );
-
-
-    return typeof result==="string"
-      ? result
-      : JSON.stringify(result);
-
-  }
-
-
-  throw new Error(
-    "No AI backend connected."
-  );
-
+  return await apiRequest("/ai/answer", {
+    method: "POST",
+    body: JSON.stringify({
+      mode: request.mode || state.mode,
+      prompt: request.userInput || request.prompt || ""
+    })
+  });
 }
 
 
@@ -3333,7 +3281,7 @@ async function askAI(){
 
 
     output.textContent=
-      String(answer);
+      String(answer.answer || answer) + (answer.provider ? "\n\n— Answered by " + answer.provider.replace(/_/g, " ") + " · " + answer.elapsed_ms + " ms" : "");
 
 
     state.stats.questions++;
@@ -3348,15 +3296,10 @@ async function askAI(){
     console.error(error);
 
 
-    output.textContent=
-      "The study engine is not connected yet.\n\n"+
-      "Connect your secure backend using "+
-      "window.ULTRON_AI to enable live responses.";
+    output.textContent = error.message || "The study engine could not get a response from either provider.";
 
 
-    toast(
-      "Study engine not connected."
-    );
+    toast(error.message || "Study engine unavailable.");
 
   }finally{
 
@@ -3614,6 +3557,7 @@ document.addEventListener(
 );
 
 </script>
+<script src="ultron-enhancements.js"></script>
 
 </body>
 </html>
