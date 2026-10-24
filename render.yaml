@@ -31,10 +31,6 @@ services:
         value: https://manaskakkunuri.github.io
       - key: UPI_ID
         value: shreetulasi@oksbi
-      - key: TINYFISH_API_KEY
-        sync: false
-      - key: TINYFISH_SEARCH_URL
-        value: https://api.search.tinyfish.ai
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_TEXT_MODEL
