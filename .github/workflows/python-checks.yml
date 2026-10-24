@@ -22,4 +22,5 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m compileall -q backend
       - run: node --check ultron-enhancements.js
+      - run: python .github/scripts/check_inline_js.py
       - run: pytest -q
