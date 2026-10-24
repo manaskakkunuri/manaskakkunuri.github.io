@@ -873,6 +873,11 @@ main{
     padding:30px 22px;
   }
 
+  .demo-entry{width:100%;margin-top:12px;justify-content:center;border:1px solid var(--border)}
+  .demo-caption{font-size:12px;line-height:1.5;color:var(--muted);text-align:center;margin:9px 4px 0}
+  .demo-banner{position:sticky;top:0;z-index:250;background:#fff7d6;color:#704d00;border-bottom:1px solid #f2cf66;padding:10px 14px;text-align:center;font-size:12px;font-weight:700;line-height:1.5}
+  .demo-banner button{border:0;border-radius:8px;padding:5px 9px;margin-left:8px;background:#704d00;color:white;font-weight:700}
+
   .login-showcase h1{
     font-size:44px;
   }
@@ -1030,6 +1035,8 @@ main{
 
         </form>
 
+        <button id="demoButton" class="secondary-btn demo-entry" type="button" onclick="enterDemoMode()">Explore presentation demo →</button>
+        <p class="demo-caption">Preview the student dashboard without creating an account. Demo data stays in this browser; live login and cloud features require the backend.</p>
 
         <!-- SIGN UP -->
 
@@ -1204,6 +1211,8 @@ main{
 ====================================================== -->
 
 <div id="app" class="hidden">
+
+<div id="demoBanner" class="demo-banner hidden" role="status">PRESENTATION DEMO · Sample AI answers only · Accounts, image generation, subscriptions and admin actions are not connected. <button type="button" onclick="logout()">Exit demo</button></div>
 
 <header class="header">
 
@@ -2060,6 +2069,7 @@ const API_BASE_URL = (
   ""
 ).trim().replace(/\/+$/, "");
 let authToken = null;
+let demoMode = false;
 
 async function apiRequest(path, options = {}) {
   if (!API_BASE_URL) {
@@ -2480,6 +2490,26 @@ document
 
 
 /* =========================================================
+   PRESENTATION DEMO — never grants real authentication
+========================================================= */
+
+function enterDemoMode(){
+  demoMode = true;
+  authToken = null;
+  state.account = { id: 0, name: "Demo Student", email: "demo@ultron.local", role: "student", email_verified: false, className: "Class 9", rollNo: "DEMO-01", section: "A", subject: "Science" };
+  state.loggedIn = true;
+  state.tasks = [
+    { id: 91001, title: "Revise the water cycle", done: false },
+    { id: 91002, title: "Complete algebra practice", done: true },
+    { id: 91003, title: "Read 10 pages of science", done: false }
+  ];
+  state.stats = { completed: 1, focus: 2, questions: 1 };
+  document.getElementById("demoBanner").classList.remove("hidden");
+  enterApp();
+  toast("Presentation demo opened. No real account was created.");
+}
+
+/* =========================================================
    ENTER APP
 ========================================================= */
 
@@ -2507,6 +2537,8 @@ function enterApp(){
 function logout(){
 
   authToken = null;
+  demoMode = false;
+  document.getElementById("demoBanner")?.classList.add("hidden");
   state.loggedIn=false;
 
   saveState();
@@ -3265,6 +3297,15 @@ async function askAI(){
 
 
   try{
+
+    if(demoMode){
+      const demoAnswer = "PRESENTATION SAMPLE — this is not a live AI response.\\n\\nStudy question: " + text + "\\n\\nHow to approach it:\\n1. Identify the key concept in the question.\\n2. Break the concept into smaller steps.\\n3. Write down one example and check your reasoning.\\n\\nIn the live version, ULTRON will use its configured AI tutor to generate a tailored explanation.";
+      output.textContent = demoAnswer;
+      state.stats.questions++;
+      saveState();
+      renderStats();
+      return;
+    }
 
     const answer=
       await callAI({
