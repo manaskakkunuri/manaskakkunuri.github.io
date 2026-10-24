@@ -26,7 +26,7 @@ TINYFISH_API_KEY = os.getenv("TINYFISH_API_KEY", "").strip()
 TINYFISH_SEARCH_URL = os.getenv("TINYFISH_SEARCH_URL", "https://api.search.tinyfish.ai").strip()
 GEMINI_API_KEY = (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_AI_STUDIO_API_KEY") or "").strip()
 GEMINI_TEXT_MODEL = os.getenv("GEMINI_TEXT_MODEL", "gemini-3.8-flash").strip()
-GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-3.1-flash-image").strip()
+GEMINI_IMAGE_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-nano-banana-2.1").strip()
 RECONCILIATION_SECRET = os.getenv("PAYMENT_RECONCILIATION_SECRET", "").strip()
 AI_DAILY_LIMITS = {"free": 20, "basic": 250, "pro": 1000}
 IMAGE_MONTHLY_LIMITS = {"free": 2, "basic": 15, "pro": 60}
@@ -282,7 +282,6 @@ async def generate_image(data: ImageIn, db: Session = Depends(get_db), user: Use
     body = {
         "model": GEMINI_IMAGE_MODEL,
         "input": [{"type": "text", "text": "Create a polished, original image based on this prompt. Follow safety rules. Prompt: " + data.prompt.strip()}],
-        "response_format": [{"type": "image"}],
     }
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(90.0, connect=5.0)) as client:
