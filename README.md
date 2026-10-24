@@ -5,7 +5,7 @@ A responsive student-learning frontend with a FastAPI backend foundation.
 ## Repository layout
 - `index.html` — GitHub Pages frontend.
 - `backend/main.py` — API, authentication, school portals, tasks/XP, and fail-closed manual UPI review endpoints.
-- `backend/features.py` — first-successful-response AI race, subscriptions, Gemini image generation, restricted admin APIs.
+- `backend/features.py` — Google AI Studio-powered tutoring, subscriptions, Gemini image generation, restricted admin APIs.
 - `ultron-enhancements.css` / `ultron-enhancements.js` — premium dark responsive UI, mobile navigation, Plans, Image Studio, and Super Admin Center.
 - `requirements.txt` — Python dependencies.
 - `.env.example` — environment variable template; never put real secrets here.
@@ -27,7 +27,7 @@ The frontend reads its API base URL from the `ultron-api-base-url` meta tag near
 
 ## AI, subscriptions, and image studio
 - `/ai/answer` races TinyFish live web search and Google Gemini text generation concurrently; the first usable successful result wins, and failed providers are skipped. TinyFish returns live source links/snippets; Gemini returns a tutor response. The API reports provider and elapsed time.
-- Configure `TINYFISH_API_KEY`, `GEMINI_API_KEY`, `TINYFISH_SEARCH_URL`, `GEMINI_TEXT_MODEL`, and `GEMINI_IMAGE_MODEL` as backend environment variables only. Never put keys in HTML, JavaScript, or Git. Rotate any key shared in chat.
+- Configure `GEMINI_API_KEY`, `GEMINI_TEXT_MODEL`, and `GEMINI_IMAGE_MODEL` as backend environment variables only. Use the Google AI Studio API key for both tutoring and image generation. Never put keys in HTML, JavaScript, or Git. Rotate any key shared in chat.
 - `/images/generate` uses Gemini image generation. Free: 20 AI requests/day and 2 images/month; Basic ₹99/month: 250/day and 15 images/month; Pro ₹299/month: 1,000/day and 60 images/month. Server-side quotas apply; provider billing and rate limits still apply.
 - `/subscriptions/me` reports plan and usage; `/subscriptions/upi-claims` accepts a claim but never activates a subscription by UTR alone. A trusted operations process must call `/ops/payments/{claim_id}/verify` with `X-Payment-Reconciliation-Secret`; an authorized reviewer then approves via `/admin/subscriptions/{claim_id}/approve`. Approved plans last 30 days.
 - Super Admin UI requires a verified account, a separately provisioned `super_admin` role, and the two-email allowlist. Allowlisting alone never grants privileges.
