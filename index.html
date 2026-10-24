@@ -2406,6 +2406,10 @@ document
         body: JSON.stringify({ email, password })
       });
       authToken = auth.access_token;
+      if (state.account?.email && state.account.email.toLowerCase() !== auth.user.email.toLowerCase()) {
+        state.tasks = [];
+        state.stats = { completed: 0, focus: 0, questions: 0 };
+      }
       state.account = {
         id: auth.user.id, name: auth.user.display_name, email: auth.user.email,
         className, rollNo, section, subject
@@ -2413,7 +2417,7 @@ document
       state.loggedIn = true;
       saveState();
       enterApp();
-      toast("Account created. Check your email verification setup.");
+      toast("Account created. Email verification must be configured before verified-only features work.");
     } catch(error) {
       toast(error.message || "Could not create account.");
     } finally {
@@ -2445,6 +2449,10 @@ document
         body: JSON.stringify({ email, password })
       });
       authToken = auth.access_token;
+      if (state.account?.email && state.account.email.toLowerCase() !== auth.user.email.toLowerCase()) {
+        state.tasks = [];
+        state.stats = { completed: 0, focus: 0, questions: 0 };
+      }
       state.account = {
         id: auth.user.id,
         name: auth.user.display_name,
