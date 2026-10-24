@@ -550,6 +550,10 @@ def admin_audit_logs(limit: int = 100, db: Session = Depends(get_db),
 # mark a payment as independently verified. Those actions need a trusted ops process.
 
 
+from features import router as features_router
+app.include_router(features_router)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=os.getenv("APP_ENV") == "development")
