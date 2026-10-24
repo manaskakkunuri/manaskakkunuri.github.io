@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#635BFF">
-<title>Ultron — Study Smarter</title>
-
+<meta name="ultron-api-base-url" content="">
+<title>ULTRON — Study Smarter</title>
 <style>
 :root{
   --bg:#f5f6fb;
@@ -917,6 +917,7 @@ main{
   }
 }
 </style>
+<link rel="stylesheet" href="ultron-enhancements.css">
 </head>
 
 <body>
@@ -1075,8 +1076,8 @@ main{
               class="input"
               type="password"
               autocomplete="new-password"
-              minlength="6"
-              placeholder="At least 6 characters"
+              minlength="12"
+              placeholder="At least 12 characters"
               required>
 
           </div>
@@ -1186,7 +1187,7 @@ main{
 
 
         <div class="auth-note">
-          Your account is stored locally on this device.
+          Your account is protected by the ULTRON backend. Never share your password or API keys.
         </div>
 
       </div>
@@ -2049,7 +2050,35 @@ main{
 ========================================================= */
 
 const STORAGE_KEY =
-  "ULTRON_STUDENT_APP_V4";
+  "ULTRON_STUDENT_APP_V5";
+
+// Configure the backend URL using the meta tag above or window.ULTRON_API_BASE_URL.
+// Authentication is intentionally unavailable until a real backend is configured.
+const API_BASE_URL = (
+  document.querySelector('meta[name="ultron-api-base-url"]')?.content ||
+  window.ULTRON_API_BASE_URL ||
+  ""
+).trim().replace(/\/+$/, "");
+let authToken = null;
+
+async function apiRequest(path, options = {}) {
+  if (!API_BASE_URL) {
+    throw new Error("Backend not configured. Deploy the ULTRON API and set the API URL in index.html.");
+  }
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (authToken) headers.Authorization = "Bearer " + authToken;
+  let response;
+  try {
+    response = await fetch(API_BASE_URL + path, { ...options, headers });
+  } catch (_) {
+    throw new Error("Could not reach the ULTRON backend. Check its URL, CORS settings, and deployment.");
+  }
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body.detail || "Request failed (" + response.status + ").");
+  }
+  return body;
+}
 
 let memoryStorage = null;
 
@@ -2059,7 +2088,7 @@ const state = {
 
   loggedIn:false,
 
-  theme:"light",
+  theme:"dark",
 
   tasks:[],
 
@@ -2120,18 +2149,13 @@ function storageSet(value){
 
 function saveState(){
 
+  // Only non-sensitive UI/profile state is persisted. Never store passwords,
+  // authentication tokens, or a trusted logged-in flag in localStorage.
   const data={
-
     account:state.account,
-
-    loggedIn:state.loggedIn,
-
     theme:state.theme,
-
     tasks:state.tasks,
-
     stats:state.stats
-
   };
 
 
@@ -2159,12 +2183,12 @@ function loadState(){
       data.account || null;
 
 
-    state.loggedIn=
-      Boolean(data.loggedIn);
+    // A browser refresh must not restore authentication from localStorage.
+    state.loggedIn = false;
 
 
     state.theme=
-      data.theme || "light";
+      data.theme || "dark";
 
 
     state.tasks=
@@ -2356,110 +2380,51 @@ document
 .getElementById("signupForm")
 .addEventListener(
   "submit",
-  function(event){
-
+  async function(event){
     event.preventDefault();
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim().toLowerCase();
+    const password = document.getElementById("signupPassword").value;
+    const className = document.getElementById("signupClass").value.trim();
+    const rollNo = document.getElementById("signupRollNo").value.trim();
+    const section = document.getElementById("signupSection").value.trim();
+    const subject = document.getElementById("signupSubject").value;
 
+    if(name.length < 2){ toast("Enter your name."); return; }
+    if(password.length < 12){ toast("Password must be at least 12 characters."); return; }
 
-    const name=
-      document
-        .getElementById("signupName")
-        .value
-        .trim();
-
-
-    const email=
-      document
-        .getElementById("signupEmail")
-        .value
-        .trim()
-        .toLowerCase();
-
-
-    const password=
-      document
-        .getElementById("signupPassword")
-        .value;
-
-
-    const className=
-      document
-        .getElementById("signupClass")
-        .value
-        .trim();
-
-
-    const rollNo=
-      document
-        .getElementById("signupRollNo")
-        .value
-        .trim();
-
-
-    const section=
-      document
-        .getElementById("signupSection")
-        .value
-        .trim();
-
-
-    const subject=
-      document
-        .getElementById("signupSubject")
-        .value;
-
-
-    if(name.length<2){
-
-      toast("Enter your name.");
-
-      return;
-
+    const button = document.getElementById("signupForm").querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.textContent = "Creating account...";
+    try {
+      await apiRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({ display_name: name, email, password })
+      });
+      const auth = await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      });
+      authToken = auth.access_token;
+      if (state.account?.email && state.account.email.toLowerCase() !== auth.user.email.toLowerCase()) {
+        state.tasks = [];
+        state.stats = { completed: 0, focus: 0, questions: 0 };
+      }
+      state.account = {
+        id: auth.user.id, name: auth.user.display_name, email: auth.user.email,
+        role: auth.user.role, email_verified: auth.user.email_verified,
+        className, rollNo, section, subject
+      };
+      state.loggedIn = true;
+      saveState();
+      enterApp();
+      toast("Account created. Email verification must be configured before verified-only features work.");
+    } catch(error) {
+      toast(error.message || "Could not create account.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Create account";
     }
-
-
-    if(password.length<6){
-
-      toast(
-        "Password must be at least 6 characters."
-      );
-
-      return;
-
-    }
-
-
-    state.account={
-
-      name:name,
-
-      email:email,
-
-      password:password,
-
-      className:className,
-
-      rollNo:rollNo,
-
-      section:section,
-
-      subject:subject
-
-    };
-
-
-    state.loggedIn=true;
-
-
-    saveState();
-
-    enterApp();
-
-
-    toast(
-      "Account created successfully ✓"
-    );
-
   }
 );
 
@@ -2472,77 +2437,44 @@ document
 .getElementById("loginForm")
 .addEventListener(
   "submit",
-  function(event){
-
+  async function(event){
     event.preventDefault();
-
-
-    const email=
-      document
-        .getElementById("loginEmail")
-        .value
-        .trim()
-        .toLowerCase();
-
-
-    const password=
-      document
-        .getElementById("loginPassword")
-        .value;
-
-
-    if(!state.account){
-
-      toast(
-        "No account found. Create one first."
-      );
-
-      switchAuth("signup");
-
-      return;
-
+    const email = document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password = document.getElementById("loginPassword").value;
+    const button = document.getElementById("loginButton");
+    button.disabled = true;
+    button.textContent = "Signing in...";
+    try {
+      const auth = await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+      });
+      authToken = auth.access_token;
+      if (state.account?.email && state.account.email.toLowerCase() !== auth.user.email.toLowerCase()) {
+        state.tasks = [];
+        state.stats = { completed: 0, focus: 0, questions: 0 };
+      }
+      state.account = {
+        id: auth.user.id,
+        name: auth.user.display_name,
+        email: auth.user.email,
+        role: auth.user.role,
+        email_verified: auth.user.email_verified,
+        className: state.account?.className || "",
+        rollNo: state.account?.rollNo || "",
+        section: state.account?.section || "",
+        subject: state.account?.subject || ""
+      };
+      state.loggedIn = true;
+      saveState();
+      enterApp();
+      toast("Welcome back!");
+    } catch(error) {
+      toast(error.message || "Unable to sign in.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Login to Ultron →";
     }
-
-
-    const savedEmail=
-      String(
-        state.account.email || ""
-      )
-      .trim()
-      .toLowerCase();
-
-
-    const savedPassword=
-      String(
-        state.account.password || ""
-      );
-
-
-    if(
-      email!==savedEmail ||
-      password!==savedPassword
-    ){
-
-      toast(
-        "Incorrect email or password."
-      );
-
-      return;
-
-    }
-
-
-    state.loggedIn=true;
-
-    saveState();
-
-    enterApp();
-
-
-    toast(
-      "Welcome back ✓"
-    );
-
   }
 );
 
@@ -2574,6 +2506,7 @@ function enterApp(){
 
 function logout(){
 
+  authToken = null;
   state.loggedIn=false;
 
   saveState();
@@ -3269,69 +3202,13 @@ Rules:
 ========================================================= */
 
 async function callAI(request){
-
-  /*
-    Connect your real backend here.
-
-    Example:
-
-    window.ULTRON_AI = async function(request){
-
-      const response = await fetch(
-        "/api/ai",
-        {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body:JSON.stringify(request)
-        }
-      );
-
-      const data =
-        await response.json();
-
-      return data.answer;
-    };
-
-  */
-
-
-  if(
-    typeof window.ULTRON_AI===
-    "function"
-  ){
-
-    return await window.ULTRON_AI(
-      request
-    );
-
-  }
-
-
-  if(
-    typeof window.claude!=="undefined" &&
-    typeof window.claude.use===
-      "function"
-  ){
-
-    const result=
-      await window.claude.use(
-        request
-      );
-
-
-    return typeof result==="string"
-      ? result
-      : JSON.stringify(result);
-
-  }
-
-
-  throw new Error(
-    "No AI backend connected."
-  );
-
+  return await apiRequest("/ai/answer", {
+    method: "POST",
+    body: JSON.stringify({
+      mode: request.mode || state.mode,
+      prompt: request.userInput || request.prompt || ""
+    })
+  });
 }
 
 
@@ -3403,7 +3280,7 @@ async function askAI(){
 
 
     output.textContent=
-      String(answer);
+      String(answer.answer || answer) + (answer.provider ? "\n\n— Answered by " + answer.provider.replace(/_/g, " ") + " · " + answer.elapsed_ms + " ms" : "");
 
 
     state.stats.questions++;
@@ -3418,15 +3295,10 @@ async function askAI(){
     console.error(error);
 
 
-    output.textContent=
-      "The study engine is not connected yet.\n\n"+
-      "Connect your secure backend using "+
-      "window.ULTRON_AI to enable live responses.";
+    output.textContent = error.message || "The study engine could not get a response from either provider.";
 
 
-    toast(
-      "Study engine not connected."
-    );
+    toast(error.message || "Study engine unavailable.");
 
   }finally{
 
@@ -3639,14 +3511,10 @@ loadState();
 applyTheme();
 
 
-if(
-  state.loggedIn &&
-  state.account
-){
-
-  enterApp();
-
-}else{
+// Auth tokens are held in memory only; after a refresh, sign in again.
+state.loggedIn = false;
+authToken = null;
+{
 
   document
     .getElementById("loginScreen")
@@ -3688,6 +3556,7 @@ document.addEventListener(
 );
 
 </script>
+<script src="ultron-enhancements.js"></script>
 
 </body>
 </html>
