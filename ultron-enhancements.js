@@ -44,7 +44,7 @@ window.ultronToggleMore=function(force){const el=$("ultronMoreMenu");if(!el)retu
 async function api(path,options){if(typeof window.apiRequest==="function")return window.apiRequest(path,options||{});throw new Error("Please sign in to ULTRON first.");}
 const originalEnter=window.enterApp;
 if(typeof originalEnter==="function")window.enterApp=function(){addPages();originalEnter();ultronSyncAdminVisibility();};
-function ultronSyncAdminVisibility(){const account=window.state&&window.state.account;const allowed=["ashokbharadwaj@gmail.com","manaskakkunuri55@gmail.com"];const can=!!(account&&allowed.includes(String(account.email||"").toLowerCase())&&account.role==="super_admin"&&account.email_verified);const adminNav=document.querySelectorAll('[data-feature-page="admin"]');adminNav.forEach(n=>n.classList.toggle("hidden",!can));if($("moreAdminButton"))$("moreAdminButton").classList.toggle("hidden",!can);}
+function ultronSyncAdminVisibility(){const account=(typeof state!=="undefined"&&state.account)||null;const allowed=["ashokbharadwaj@gmail.com","manaskakkunuri55@gmail.com"];const can=!!(account&&allowed.includes(String(account.email||"").toLowerCase())&&account.role==="super_admin"&&account.email_verified);const adminNav=document.querySelectorAll('[data-feature-page="admin"]');adminNav.forEach(n=>n.classList.toggle("hidden",!can));if($("moreAdminButton"))$("moreAdminButton").classList.toggle("hidden",!can);}
 async function ultronLoadSubscription(){
  const status=$("subscriptionStatus"),cards=$("planCards"),upi=$("upiDetails");if(!status||!cards)return;
  try{const [plans,sub]=await Promise.all([api("/subscriptions/plans"),api("/subscriptions/me")]);
