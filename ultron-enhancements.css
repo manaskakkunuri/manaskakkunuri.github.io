@@ -49,3 +49,11 @@ body{background:radial-gradient(circle at 12% 0%,rgba(56,189,248,.10),transparen
 #aiOutput{white-space:pre-wrap}
 @media(max-width:900px){.feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nav{display:none!important}#ultronBottomNav{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));z-index:200;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:7px;border:1px solid #2a3b55;border-radius:20px;background:rgba(12,19,32,.94);backdrop-filter:blur(20px);box-shadow:0 10px 35px rgba(0,0,0,.4)}#ultronBottomNav button{min-width:0;border:0;border-radius:12px;padding:8px 2px;background:transparent;color:#91a4be;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}#ultronBottomNav button span{font-size:17px;line-height:1}#ultronBottomNav button.active{color:#7dd3fc;background:#102d42}main{padding-bottom:115px}}
 @media(max-width:600px){.feature-grid{grid-template-columns:1fr}.image-prompt-row{grid-template-columns:1fr}.feature-card{padding:17px}.feature-hero{border-radius:20px}.more-menu{bottom:calc(76px + env(safe-area-inset-bottom))}}
+
+:root[data-theme="dark"]{--bg:#0b0f19;--card:#111827;--card2:#172033;--text:#f4f8ff;--muted:#a4b1c7;--border:#283449;--primary:#38bdf8;--primary2:#6366f1;--soft:#102d42;--shadow:0 16px 45px rgba(0,0,0,.20)}
+:root[data-theme="light"]{--bg:#f5f7fb;--card:#ffffff;--card2:#f8fafc;--text:#151827;--muted:#667085;--border:#e4e7ef;--primary:#0284c7;--primary2:#6366f1;--soft:#e0f2fe;--shadow:0 16px 45px rgba(20,35,70,.08)}
+:root[data-theme="light"] .header{background:rgba(245,247,251,.90)}
+:root[data-theme="light"] .input,:root[data-theme="light"] .select,:root[data-theme="light"] .textarea,:root[data-theme="light"] .feature-input{background:#fff;color:#151827;border-color:#d8e0eb}
+:root[data-theme="light"] .login-showcase{background:linear-gradient(145deg,#eaf6ff,#fff)}
+:root[data-theme="light"] .feature-notice{background:#f8fafc;border-color:#dbe4ef;color:#536176}
+:root[data-theme="light"] .feature-notice.warn{background:#fffbeb;border-color:#f59e0b;color:#92400e}
