@@ -3299,7 +3299,7 @@ async function askAI(){
   try{
 
     if(demoMode){
-      const demoAnswer = "PRESENTATION SAMPLE — this is not a live AI response.\\n\\nStudy question: " + text + "\\n\\nHow to approach it:\\n1. Identify the key concept in the question.\\n2. Break the concept into smaller steps.\\n3. Write down one example and check your reasoning.\\n\\nIn the live version, ULTRON will use its configured AI tutor to generate a tailored explanation.";
+      const demoAnswer = "PRESENTATION SAMPLE — this is not a live AI response.\n\nStudy question: " + text + "\n\nHow to approach it:\n1. Identify the key concept in the question.\n2. Break the concept into smaller steps.\n3. Write down one example and check your reasoning.\n\nIn the live version, ULTRON will use its configured AI tutor to generate a tailored explanation.";
       output.textContent = demoAnswer;
       state.stats.questions++;
       saveState();
