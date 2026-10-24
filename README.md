@@ -26,11 +26,18 @@ Use Python 3.11+.
 The frontend reads its API base URL from the `ultron-api-base-url` meta tag near the top of `index.html`. Set it to the HTTPS URL of the deployed API before using account login or registration. Configure the API's `ALLOWED_ORIGINS` to the exact frontend origin. GitHub Pages hosts static files only; it does not run FastAPI.
 
 ## AI, subscriptions, and image studio
-- `/ai/answer` races TinyFish live web search and Google Gemini text generation concurrently; the first usable successful result wins, and failed providers are skipped. TinyFish returns live source links/snippets; Gemini returns a tutor response. The API reports provider and elapsed time.
+- `/ai/answer` uses Google AI Studio (Gemini) only. There is no TinyFish integration or alternate AI-provider fallback. The API reports provider and elapsed time.
 - Configure `GEMINI_API_KEY`, `GEMINI_TEXT_MODEL`, and `GEMINI_IMAGE_MODEL` as backend environment variables only. Use the Google AI Studio API key for both tutoring and image generation. Never put keys in HTML, JavaScript, or Git. Rotate any key shared in chat.
 - `/images/generate` uses Gemini image generation. Free: 20 AI requests/day and 2 images/month; Basic ₹99/month: 250/day and 15 images/month; Pro ₹299/month: 1,000/day and 60 images/month. Server-side quotas apply; provider billing and rate limits still apply.
 - `/subscriptions/me` reports plan and usage; `/subscriptions/upi-claims` accepts a claim but never activates a subscription by UTR alone. A trusted operations process must call `/ops/payments/{claim_id}/verify` with `X-Payment-Reconciliation-Secret`; an authorized reviewer then approves via `/admin/subscriptions/{claim_id}/approve`. Approved plans last 30 days.
 - Super Admin UI requires a verified account, a separately provisioned `super_admin` role, and the two-email allowlist. Allowlisting alone never grants privileges.
+
+## Google sign-in setup
+- Create an OAuth 2.0 Client ID of type **Web application** in Google Cloud Console and configure the OAuth consent screen.
+- Add `https://manaskakkunuri.github.io` as an **Authorized JavaScript origin**. Add `http://localhost:8000` only if testing locally from that exact origin; never add wildcard origins.
+- Set the same Web Client ID in two places: the `ultron-google-client-id` meta tag in `index.html` (public client ID) and `GOOGLE_CLIENT_ID` in the Render backend environment. The backend verifies the Google ID token audience and verified email before issuing a ULTRON session.
+- Google sign-in creates a regular student account on first use, or signs into an existing account with the same verified email. It does not grant school or administrator roles.
+- The frontend must also have the real API URL set in `ultron-api-base-url`; Google sign-in cannot work while that is blank or while the backend is unavailable.
 
 ## API notes
 - Registration requires a 12-character password and creates an unverified student account. A real email-verification workflow is intentionally not faked and must be implemented before verified-only features can be used.
