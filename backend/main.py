@@ -11,6 +11,8 @@ from typing import Generator, Optional
 from urllib.parse import urlparse
 
 from fastapi import Depends, FastAPI, HTTPException
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -28,6 +30,7 @@ ALLOWED_ORIGINS = [v.strip() for v in os.getenv(
     "ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
 ).split(",") if v.strip()]
 UPI_ID = os.getenv("UPI_ID", "shreetulasi@oksbi").strip()
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "").strip()
 REVIEWER_EMAILS = {"ashokbharadwaj@gmail.com", "manaskakkunuri55@gmail.com"}
 PLAN_AMOUNTS = {"basic": 9900, "pro": 29900}
 ALGORITHM = "HS256"
@@ -150,6 +153,10 @@ class RegisterIn(BaseModel):
 class LoginIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=128)
+
+
+class GoogleLoginIn(BaseModel):
+    credential: str = Field(min_length=20, max_length=10000)
 
 
 class UserOut(BaseModel):
@@ -337,6 +344,58 @@ def login(data: LoginIn, db: Session = Depends(get_db)):
     user = db.scalar(select(User).where(User.email == str(data.email).lower().strip()))
     if not user or not user.is_active or not verify_password(data.password, user.password_hash):
         raise HTTPException(401, "Invalid email or password")
+    return TokenOut(access_token=issue_token(user), expires_in=TOKEN_MINUTES * 60, user=user)
+
+
+@app.post("/auth/google", response_model=TokenOut)
+def google_login(data: GoogleLoginIn, db: Session = Depends(get_db)):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(503, "Google sign-in is not configured on the ULTRON backend.")
+    try:
+        claims = google_id_token.verify_oauth2_token(
+            data.credential,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID,
+        )
+    except Exception:
+        raise HTTPException(401, "Google sign-in token is invalid or expired. Please try again.")
+    issuer = claims.get("iss")
+    if issuer not in {"accounts.google.com", "https://accounts.google.com"}:
+        raise HTTPException(401, "Google sign-in issuer was not valid.")
+    email = str(claims.get("email", "")).lower().strip()
+    if not email or claims.get("email_verified") is not True:
+        raise HTTPException(403, "Use a Google account with a verified email address.")
+    display_name = str(claims.get("name") or email.split("@", 1)[0]).strip()[:80]
+    if len(display_name) < 2:
+        display_name = email.split("@", 1)[0][:80] or "Google Student"
+    user = db.scalar(select(User).where(User.email == email))
+    if user:
+        if not user.is_active:
+            raise HTTPException(403, "This ULTRON account is inactive.")
+        # A verified Google identity proves control of the matching email address.
+        user.email_verified = True
+        if not user.display_name.strip():
+            user.display_name = display_name
+    else:
+        user = User(
+            email=email,
+            display_name=display_name,
+            password_hash=password_hash(secrets.token_urlsafe(48)),
+            role="student",
+            email_verified=True,
+            is_active=True,
+        )
+        db.add(user)
+        try:
+            db.flush()
+        except IntegrityError:
+            db.rollback()
+            user = db.scalar(select(User).where(User.email == email))
+            if not user or not user.is_active:
+                raise HTTPException(409, "Could not create this ULTRON account. Please try again.")
+    write_audit(db, user.id, "user.google_login", "user", user.id, "Verified Google Identity Services credential")
+    db.commit()
+    db.refresh(user)
     return TokenOut(access_token=issue_token(user), expires_in=TOKEN_MINUTES * 60, user=user)
 
 
