@@ -56,3 +56,33 @@ def test_bad_utr_rejected():
         "plan": "basic", "utr": "123", "amount_paise": 9900
     })
     assert response.status_code == 422
+
+
+
+def test_google_login_requires_server_client_id(monkeypatch):
+    import main
+    monkeypatch.setattr(main, "GOOGLE_CLIENT_ID", "")
+    response = client.post("/auth/google", json={"credential": "x" * 30})
+    assert response.status_code == 503
+    assert "not configured" in response.json()["detail"]
+
+
+def test_google_login_creates_verified_student(monkeypatch):
+    import main
+    monkeypatch.setattr(main, "GOOGLE_CLIENT_ID", "test-client-id.apps.googleusercontent.com")
+    monkeypatch.setattr(main.google_id_token, "verify_oauth2_token", lambda *args, **kwargs: {
+        "iss": "https://accounts.google.com",
+        "aud": "test-client-id.apps.googleusercontent.com",
+        "email": "google-student@example.com",
+        "email_verified": True,
+        "name": "Google Student",
+        "sub": "google-subject-test",
+    })
+    monkeypatch.setattr(main.google_requests, "Request", lambda: object())
+    response = client.post("/auth/google", json={"credential": "fake-credential-for-test-only"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["user"]["email"] == "google-student@example.com"
+    assert payload["user"]["email_verified"] is True
+    assert payload["user"]["role"] == "student"
+    assert payload["access_token"]
