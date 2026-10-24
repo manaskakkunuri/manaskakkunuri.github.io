@@ -69,3 +69,23 @@ def test_image_generation_requires_backend_key(monkeypatch):
         "prompt": "A clear water cycle diagram for grade eight"
     })
     assert response.status_code == 503
+
+
+
+def test_ai_falls_back_when_tinyfish_fails(monkeypatch):
+    async def failing_tinyfish(prompt, mode):
+        await asyncio.sleep(0.01)
+        raise RuntimeError("TinyFish unavailable")
+
+    async def working_gemini(prompt, mode):
+        await asyncio.sleep(0.03)
+        return "Gemini fallback answer"
+
+    monkeypatch.setattr(features, "tinyfish_answer", failing_tinyfish)
+    monkeypatch.setattr(features, "gemini_answer", working_gemini)
+    response = client.post("/ai/answer", headers=create_student_token(), json={
+        "mode": "summary", "prompt": "Summarize photosynthesis"
+    })
+    assert response.status_code == 200
+    assert response.json()["provider"] == "google_ai_studio"
+    assert response.json()["answer"] == "Gemini fallback answer"
