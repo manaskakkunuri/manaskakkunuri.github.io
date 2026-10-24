@@ -2495,6 +2495,7 @@ document
 
 function enterDemoMode(){
   demoMode = true;
+  window.ULTRON_DEMO_MODE = true;
   authToken = null;
   state.account = { id: 0, name: "Demo Student", email: "demo@ultron.local", role: "student", email_verified: false, className: "Class 9", rollNo: "DEMO-01", section: "A", subject: "Science" };
   state.loggedIn = true;
@@ -2538,6 +2539,7 @@ function logout(){
 
   authToken = null;
   demoMode = false;
+  window.ULTRON_DEMO_MODE = false;
   document.getElementById("demoBanner")?.classList.add("hidden");
   state.loggedIn=false;
 
