@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#635BFF">
 <meta name="ultron-api-base-url" content="">
+<meta name="ultron-google-client-id" content="">
 <title>ULTRON — Study Smarter</title>
 <style>
 :root{
@@ -336,6 +337,11 @@ button{
   font-weight:800;
 }
 
+.google-auth{display:grid;gap:10px;margin:16px 0 18px}
+.google-auth-divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700}
+.google-auth-divider::before,.google-auth-divider::after{content:"";height:1px;flex:1;background:var(--border)}
+#googleSignInButton{display:flex;justify-content:center;min-height:42px}
+.google-auth-message{color:var(--muted);font-size:11px;text-align:center;line-height:1.45}
 .auth-note{
   margin-top:17px;
   color:var(--muted);
@@ -923,6 +929,7 @@ main{
 }
 </style>
 <link rel="stylesheet" href="ultron-enhancements.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
@@ -989,6 +996,10 @@ main{
 
         </div>
 
+        <div class="google-auth">
+          <div id="googleSignInButton"></div>
+          <p id="googleAuthMessage" class="google-auth-message">Sign in securely with your Google account.</p>
+        </div>
 
         <!-- LOGIN -->
 
@@ -2068,8 +2079,81 @@ const API_BASE_URL = (
   window.ULTRON_API_BASE_URL ||
   ""
 ).trim().replace(/\/+$/, "");
+const GOOGLE_CLIENT_ID = (document.querySelector('meta[name="ultron-google-client-id"]')?.content || "").trim();
 let authToken = null;
 let demoMode = false;
+let googleSignInInitialized = false;
+
+function initializeGoogleSignIn(){
+  const container = document.getElementById("googleSignInButton");
+  const message = document.getElementById("googleAuthMessage");
+  if(!container || googleSignInInitialized) return;
+  if(!GOOGLE_CLIENT_ID){
+    message.textContent = "Google sign-in needs a Google OAuth Client ID configured for this website.";
+    return;
+  }
+  if(!window.google?.accounts?.id){
+    message.textContent = "Google sign-in is loading. Please wait a moment and refresh if needed.";
+    return;
+  }
+  googleSignInInitialized = true;
+  window.google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false,
+    cancel_on_tap_outside: true
+  });
+  window.google.accounts.id.renderButton(container, {
+    type: "standard",
+    theme: document.documentElement.dataset.theme === "dark" ? "filled_black" : "outline",
+    size: "large",
+    shape: "rectangular",
+    text: "continue_with",
+    width: Math.min(360, Math.max(240, container.clientWidth || 320)),
+    logo_alignment: "left"
+  });
+  message.textContent = "Choose a Google account to continue to ULTRON.";
+}
+
+async function handleGoogleCredential(response){
+  if(!response?.credential){
+    toast("Google did not return a sign-in credential. Please try again.");
+    return;
+  }
+  const message = document.getElementById("googleAuthMessage");
+  message.textContent = "Signing in with Google…";
+  try{
+    const auth = await apiRequest("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({credential: response.credential})
+    });
+    authToken = auth.access_token;
+    if(state.account?.email && state.account.email.toLowerCase() !== auth.user.email.toLowerCase()){
+      state.tasks = [];
+      state.stats = {completed: 0, focus: 0, questions: 0};
+    }
+    state.account = {
+      id: auth.user.id,
+      name: auth.user.display_name,
+      email: auth.user.email,
+      role: auth.user.role,
+      email_verified: auth.user.email_verified,
+      className: state.account?.className || "",
+      rollNo: state.account?.rollNo || "",
+      section: state.account?.section || "",
+      subject: state.account?.subject || ""
+    };
+    state.loggedIn = true;
+    saveState();
+    enterApp();
+    toast("Signed in with Google. Welcome!");
+  }catch(error){
+    message.textContent = error.message || "Google sign-in failed. Please try again.";
+    toast(message.textContent);
+  }
+}
+
+window.addEventListener("load", initializeGoogleSignIn);
 
 async function apiRequest(path, options = {}) {
   if (!API_BASE_URL) {
