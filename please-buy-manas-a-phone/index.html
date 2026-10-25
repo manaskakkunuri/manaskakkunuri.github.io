@@ -3,347 +3,97 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#08090b">
-<title>Please Buy Manas a Phone</title>
+<meta name="theme-color" content="#07080b">
+<title>OnePlus 15R — A Case for Manas</title>
 <style>
-:root{--bg:#08090b;--muted:#a8b0bb;--text:#f6f7f9;--red:#ff3c48;--green:#b5ff67}
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at 80% 20%,#2a1018 0,transparent 30%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
-button{font:inherit;cursor:pointer}
-.deck{min-height:100vh;display:flex;flex-direction:column}
-.top{display:flex;justify-content:space-between;align-items:center;padding:20px 5vw;color:var(--muted);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase}
-.brand{color:white;font-weight:800}
-.brand span{color:var(--red)}
-main{width:min(1180px,90vw);margin:auto;flex:1;display:flex;align-items:center;padding:30px 0 90px}
-.slide{display:none;width:100%;grid-template-columns:1.1fr .9fr;gap:6vw;align-items:center;animation:fade .4s ease}
-.slide.active{display:grid}
-.eyebrow{color:var(--green);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem}
-.eyebrow.red{color:var(--red)}
-h1{font-size:clamp(3rem,7vw,6.7rem);line-height:.98;letter-spacing:-.065em;margin:18px 0 24px}
-h2{font-size:clamp(2.4rem,5vw,4.7rem);line-height:1.02;letter-spacing:-.05em;margin:16px 0 22px}
-p{font-size:clamp(1rem,1.4vw,1.2rem);line-height:1.75;color:#c4cad2;max-width:62ch}
-.accent{color:var(--red)}
-.green{color:var(--green)}
-.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
-.chip{border:1px solid #343840;border-radius:99px;padding:9px 14px;color:#e4e7eb;font-size:.88rem}
-.visual{min-height:390px;display:grid;place-items:center;position:relative}
-.phone{width:230px;height:440px;border:7px solid #454952;border-radius:38px;background:linear-gradient(160deg,#171b22,#050608);box-shadow:0 0 0 2px #111,0 30px 90px #000a;position:relative;padding:18px;transform:rotate(7deg)}
-.phone:before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:75px;height:18px;border-radius:20px;background:#050608}
-.screen{height:100%;border-radius:23px;background:linear-gradient(155deg,#1c2933,#07090d 58%,#3a111b);padding:40px 14px 18px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
-.orb{width:120px;height:120px;border-radius:50%;margin:25px auto;background:radial-gradient(circle at 30% 25%,#fff,#ff6d74 12%,#b30f26 45%,#17151b 72%);box-shadow:0 0 55px #ff3c4855}
-.screen small{color:#aeb7c3}
-.screen strong{font-size:1.5rem;line-height:1.1}
-.screen .mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.mini span{background:#ffffff12;border:1px solid #ffffff18;border-radius:10px;padding:10px 7px;font-size:.72rem}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
-.stat{padding:17px;background:#ffffff08;border:1px solid #ffffff14;border-radius:16px}
-.stat b{display:block;font-size:1.1rem;color:white;margin-bottom:5px}
-.stat span{font-size:.82rem;color:var(--muted)}
-.compare{width:100%;border-collapse:collapse;margin-top:20px;font-size:.95rem}
-.compare th,.compare td{text-align:left;padding:14px 12px;border-bottom:1px solid #ffffff18}
-.compare th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
-.compare .this{color:var(--green)}
-.cardlist{display:grid;gap:12px;margin-top:22px}
-.item{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:#ffffff08;border:1px solid #ffffff12}
-.item i{font-style:normal;color:var(--green);font-size:1.25rem}
-.item strong{display:block;margin-bottom:4px}
-.item span{color:var(--muted);font-size:.94rem;line-height:1.5}
-.controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:17px 5vw;background:linear-gradient(transparent,#08090b 25%)}
-.progress{height:3px;background:#ffffff1c;flex:1;border-radius:5px;overflow:hidden}
-.bar{height:100%;width:12.5%;background:var(--red);transition:width .25s}
-.nav{border:1px solid #393d45;background:#15171c;color:white;border-radius:50px;padding:10px 17px}
-.nav.primary{background:var(--red);border-color:var(--red);font-weight:800}
-.counter{font-variant-numeric:tabular-nums;color:var(--muted);min-width:52px;text-align:center;font-size:.9rem}
-.hint{font-size:.75rem;color:#747c87}
-.note{font-size:.83rem!important;color:#8e98a5!important}
-.price{font-size:clamp(2.7rem,6vw,5rem);font-weight:900;letter-spacing:-.06em;color:var(--green)}
-.bigquote{font-size:clamp(1.5rem,3vw,2.5rem);line-height:1.4;color:white;font-weight:700;letter-spacing:-.03em}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
-.action{border:1px solid #393d45;border-radius:12px;padding:12px 16px;color:white;background:#17191f}
-.action.primary{background:var(--red);border-color:var(--red);font-weight:800}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:760px){
-main{padding:22px 0 105px}
-.slide.active{grid-template-columns:1fr;gap:18px}
-.visual{min-height:260px}
-.phone{transform:scale(.72) rotate(5deg);margin:-55px 0}
-.top{padding:16px 5vw}
-.hint{display:none}
-.stats{margin-top:18px}
-.controls{gap:8px;padding:12px 4vw}
-.nav{padding:10px 13px}
-.compare th,.compare td{padding:10px 6px;font-size:.8rem}
-}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:root{--red:#f04452;--lime:#c7ff72;--white:#f7f7f4;--muted:#b9bdc6}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07080b;color:var(--white);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}button{font:inherit;cursor:pointer}
+#film{position:relative;width:100%;height:100%;isolation:isolate;background:radial-gradient(ellipse at 70% 45%,#291015 0,transparent 45%),#07080b}
+.scene{position:absolute;inset:0;display:flex;align-items:center;padding:clamp(28px,7vw,100px);opacity:0;visibility:hidden;transform:scale(1.04);transition:opacity 1s ease,transform 7s linear,visibility 1s;overflow:hidden}
+.scene.active{opacity:1;visibility:visible;transform:scale(1);z-index:2}
+.scene:before{content:"";position:absolute;inset:-20%;z-index:-1;background:radial-gradient(circle at 75% 50%,rgba(240,68,82,.2),transparent 30%),radial-gradient(circle at 15% 80%,rgba(199,255,114,.09),transparent 25%);animation:drift 12s ease-in-out infinite alternate}
+.scene:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(7,8,11,.15),transparent 60%),linear-gradient(0deg,rgba(7,8,11,.65),transparent 35%)}
+.content{position:relative;z-index:3;max-width:750px;animation:rise 1s both}
+.kicker{font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;font-weight:800;color:var(--lime);margin-bottom:22px}
+h1,h2{margin:0;letter-spacing:-.075em;line-height:.92;font-weight:850;text-wrap:balance}
+h1{font-size:clamp(3.5rem,10vw,9.5rem)}h2{font-size:clamp(3rem,7.4vw,7rem)}
+p{max-width:660px;font-size:clamp(1rem,1.8vw,1.35rem);line-height:1.6;color:#d0d1d6;margin:26px 0 0}
+.red{color:var(--red)}.lime{color:var(--lime)}.white{color:white}
+.scene-number{position:absolute;right:5vw;top:5vh;color:#ffffff65;letter-spacing:.22em;font-size:.75rem;z-index:3}
+.visual{position:absolute;right:8%;top:50%;transform:translateY(-50%);width:min(31vw,390px);height:min(70vh,620px);z-index:2;pointer-events:none}
+.device{position:absolute;inset:0;border-radius:50px;border:8px solid #555963;background:#101218;box-shadow:0 0 0 2px #17181e,0 45px 130px #000c,0 0 90px #f0445220;transform:rotate(9deg);padding:10px;animation:float 6s ease-in-out infinite}
+.display{height:100%;border-radius:39px;overflow:hidden;position:relative;background:linear-gradient(145deg,#283a43,#090b10 53%,#4d121e);padding:35px 23px;display:flex;flex-direction:column;justify-content:space-between}
+.display:before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:74px;height:18px;border-radius:20px;background:#030405}
+.glowball{width:72%;aspect-ratio:1;border-radius:50%;margin:15px auto;background:radial-gradient(circle at 30% 25%,#fff 0,#ff8b91 8%,#e51f3b 28%,#661322 52%,#090b10 72%);box-shadow:0 0 80px #f0445260;animation:pulse 4s ease-in-out infinite}
+.display small{color:#c6cbd3;letter-spacing:.13em;font-size:.66rem}
+.display strong{font-size:clamp(1.3rem,2.4vw,2.1rem);letter-spacing:-.055em;line-height:1.02}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tiles span{padding:10px 8px;border:1px solid #ffffff24;background:#ffffff0b;border-radius:10px;font-size:.68rem;color:#e8e9ec}
+.orbit{position:absolute;width:40vw;height:40vw;right:2%;top:50%;transform:translateY(-50%);border:1px solid #ffffff10;border-radius:50%;box-shadow:0 0 0 65px #ffffff03,0 0 0 130px #ffffff02}
+.metrics{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}.metric{border-left:2px solid var(--red);padding:7px 16px}.metric b{display:block;font-size:clamp(1.25rem,2.5vw,2rem);letter-spacing:-.04em}.metric span{font-size:.75rem;color:var(--muted)}
+.bullet{display:flex;gap:15px;margin-top:22px;align-items:flex-start}.bullet i{font-style:normal;color:var(--lime);font-size:1.2rem}.bullet strong{display:block;font-size:1.04rem}.bullet span{display:block;color:#bfc2ca;line-height:1.5;margin-top:4px}
+.price{font-size:clamp(3.4rem,8vw,7rem);letter-spacing:-.08em;font-weight:900;color:var(--lime);margin-top:20px}
+.quote{font-size:clamp(1.6rem,3.5vw,3.1rem);line-height:1.22;letter-spacing:-.04em;color:white;font-weight:750;max-width:820px;margin-top:28px}
+.brand{position:absolute;left:5vw;top:4vh;z-index:5;font-size:.72rem;font-weight:850;letter-spacing:.2em}.brand span{color:var(--red)}
+.controls{position:absolute;z-index:10;left:0;right:0;bottom:0;padding:24px 5vw 22px;display:flex;align-items:center;gap:13px;background:linear-gradient(transparent,#07080bf2)}
+.control{border:1px solid #ffffff28;color:white;background:#ffffff0b;border-radius:50px;padding:10px 15px;backdrop-filter:blur(12px)}.control.main{background:var(--red);border-color:var(--red);font-weight:800}.control:focus-visible{outline:2px solid var(--lime)}
+.timeline{height:3px;flex:1;background:#ffffff30;overflow:hidden;border-radius:10px}.timeline span{display:block;width:0;height:100%;background:var(--red);box-shadow:0 0 15px var(--red)}
+.time{font-size:.78rem;color:#b9bdc6;font-variant-numeric:tabular-nums;min-width:48px;text-align:center}.hint{font-size:.72rem;color:#7e838d}
+.subtitle{position:absolute;z-index:8;left:50%;bottom:95px;transform:translateX(-50%);width:min(90%,900px);text-align:center;color:#fff;text-shadow:0 2px 12px #000;font-size:clamp(.9rem,1.6vw,1.2rem);opacity:0;transition:opacity .3s;pointer-events:none}.subtitle.show{opacity:1}
+@keyframes rise{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}@keyframes drift{from{transform:translate(-2%,1%) scale(1)}to{transform:translate(2%,-2%) scale(1.08)}}@keyframes float{0%,100%{transform:rotate(9deg) translateY(0)}50%{transform:rotate(5deg) translateY(-15px)}}@keyframes pulse{0%,100%{transform:scale(.96);filter:hue-rotate(0)}50%{transform:scale(1.04);filter:hue-rotate(8deg)}}
+@media(max-width:760px){.scene{align-items:flex-start;padding:17vh 7vw 130px}.content{max-width:100%}.visual{width:36vw;height:43vh;right:7%;top:70%;opacity:.65}.device{border-width:5px;border-radius:30px;padding:6px}.display{border-radius:24px;padding:26px 10px}.display:before{width:40px;height:12px}.display strong{font-size:1rem}.display small{font-size:.48rem}.tiles{gap:4px}.tiles span{font-size:.48rem;padding:7px 4px}.glowball{margin:10px auto}.scene:after{background:linear-gradient(90deg,#07080b 0,rgba(7,8,11,.7) 60%,transparent),linear-gradient(0deg,#07080b 0,transparent 70%)}.metrics{gap:7px}.metric{padding:5px 10px}.metric b{font-size:1.1rem}.metric span{font-size:.65rem}.controls{gap:7px;padding:16px 4vw}.control{padding:9px 11px}.hint{display:none}.subtitle{bottom:82px}.orbit{width:75vw;height:75vw;right:-25%}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="deck">
-<header class="top">
+<div id="film" aria-label="Cinematic OnePlus 15R presentation">
 <div class="brand">THE CASE <span>FOR 15R</span></div>
-<div>Manas · A thoughtful request</div>
-</header>
-<main>
-
-<section class="slide active">
-<div>
-<div class="eyebrow red">A proposal for Dad</div>
-<h1>Please buy<br>Manas a <span class="accent">phone.</span></h1>
-<p>Not just a new device. A practical tool for learning, building projects, researching ideas and staying organised — chosen with value and responsibility in mind.</p>
-<div class="chips">
-<span class="chip">Study-ready</span>
-<span class="chip">Built for multitasking</span>
-<span class="chip">Long-lasting battery</span>
-</div>
-</div>
-<div class="visual">
-<div class="phone"><div class="screen">
-<small>ONEPLUS · 15R</small>
-<div>
-<div class="orb"></div>
-<strong>Power for<br>what's next.</strong>
-</div>
-<div class="mini">
-<span>Study</span><span>Create</span><span>Research</span><span>Build</span>
-</div>
-</div></div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">01 · Performance</div>
-<h2>A pocket-sized <span class="accent">workbench.</span></h2>
-<p>The Snapdragon 8 Gen 5 platform and fast memory are designed for demanding everyday tasks: switching between documents, browser tabs, video calls, coding tools and creative apps without constantly waiting.</p>
-<div class="stats">
-<div class="stat"><b>Snapdragon 8 Gen 5</b><span>High-performance mobile platform</span></div>
-<div class="stat"><b>12 GB RAM*</b><span>Room for multitasking</span></div>
-<div class="stat"><b>UFS 4.1 storage*</b><span>Fast app and file access</span></div>
-<div class="stat"><b>5G + Wi‑Fi</b><span>Flexible connectivity</span></div>
-</div>
-<p class="note">*Configuration depends on the version sold in your market. Check the exact Indian model before purchase.</p>
-</div>
-<div class="visual">
-<div class="phone"><div class="screen">
-<small>FOCUS MODE</small>
-<div>
-<strong>One idea.<br>Many tabs.<br><span class="green">One smooth flow.</span></strong>
-<div class="orb"></div>
-</div>
-<div class="mini">
-<span>Docs</span><span>Browser</span><span>Notes</span><span>AI tools</span>
-</div>
-</div></div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">02 · Learning</div>
-<h2>Made for the <span class="accent">curious mind.</span></h2>
-<p>A large, high-resolution AMOLED screen can make reading PDFs, viewing diagrams, attending online lessons and reviewing project documentation more comfortable.</p>
-<div class="cardlist">
-<div class="item"><i>↗</i><div><strong>Learn anywhere</strong><span>Online classes, lecture recordings and educational videos.</span></div></div>
-<div class="item"><i>⌕</i><div><strong>Research faster</strong><span>Compare sources, save references and organise notes.</span></div></div>
-<div class="item"><i>⌘</i><div><strong>Build useful skills</strong><span>Practise programming, use cloud tools and manage personal projects.</span></div></div>
-</div>
-</div>
-<div class="visual">
-<div class="phone"><div class="screen" style="background:linear-gradient(145deg,#122c36,#090c11)">
-<small>STUDY NOTES · 01</small>
-<div>
-<div class="eyebrow">LEARN / TEST / IMPROVE</div>
-<strong>Small steps.<br>Real progress.</strong>
-<div style="margin-top:22px;height:8px;border-radius:8px;background:#ffffff20"><div style="height:100%;width:72%;background:#b5ff67;border-radius:8px"></div></div>
-<small>Weekly learning goals</small>
-</div>
-<div class="mini"><span>PDFs</span><span>Classes</span><span>Notes</span><span>Projects</span></div>
-</div></div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">03 · Display & battery</div>
-<h2>Less charging.<br><span class="accent">More doing.</span></h2>
-<p>The 6.83-inch AMOLED display offers generous space for reading and creating. The advertised 7,400 mAh battery is a standout feature, though real battery life depends on signal, brightness and workload.</p>
-<div class="stats">
-<div class="stat"><b>6.83-inch</b><span>AMOLED display</span></div>
-<div class="stat"><b>7,400 mAh</b><span>Advertised battery capacity</span></div>
-<div class="stat"><b>High refresh rate</b><span>Smoother scrolling where supported</span></div>
-<div class="stat"><b>Fast charging</b><span>Charger and regional specs vary</span></div>
-</div>
-<p class="note">Verify local specifications, charger inclusion, warranty and durability rating with the Indian retailer.</p>
-</div>
-<div class="visual">
-<div class="phone"><div class="screen">
-<small>YOUR DAY, AT A GLANCE</small>
-<div>
-<div class="orb" style="background:radial-gradient(circle at 30% 25%,#fff,#b5ff67 13%,#267c5a 44%,#10141b 72%)"></div>
-<strong>Ready when<br>you are.</strong>
-</div>
-<div class="mini"><span>Morning</span><span>Classes</span><span>Projects</span><span>Evening</span></div>
-</div></div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">04 · Helpful AI</div>
-<h2>AI that can help me <span class="accent">learn.</span></h2>
-<p>Compatible Android phones can support AI tools that explain concepts, summarise material, help brainstorm and assist with writing. Availability depends on the app, region, account, age and software version.</p>
-<div class="cardlist">
-<div class="item"><i>✦</i><div><strong>Understand difficult topics</strong><span>Ask for simpler explanations, examples and practice questions — then verify important facts.</span></div></div>
-<div class="item"><i>▤</i><div><strong>Work with notes and documents</strong><span>Use supported tools to organise information and create study outlines.</span></div></div>
-<div class="item"><i>◎</i><div><strong>Search what I see</strong><span>Features such as Circle to Search may be available on compatible devices and supported software.</span></div></div>
-</div>
-<p class="note">AI is a study assistant, not a replacement for learning, original work or checking sources.</p>
-</div>
-<div class="visual">
-<div class="phone"><div class="screen" style="background:linear-gradient(160deg,#1e1731,#08090d 70%)">
-<small>ASK · EXPLORE · VERIFY</small>
-<div>
-<div class="orb" style="background:radial-gradient(circle at 30% 25%,#fff,#a78bfa 13%,#5b35b7 44%,#10111b 72%)"></div>
-<strong>Big questions<br>start small.</strong>
-</div>
-<div class="mini"><span>Explain</span><span>Summarise</span><span>Brainstorm</span><span>Verify</span></div>
-</div></div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">05 · Honest comparison</div>
-<h2>Smart value, not just a <span class="accent">big name.</span></h2>
-<p>The 15R aims to deliver flagship-class performance and a large battery at a lower price than the top-tier OnePlus model. It is not identical to a full flagship: camera versatility, wireless charging and other premium extras can differ.</p>
-<table class="compare">
-<thead><tr><th>What matters</th><th>OnePlus 15R</th><th>Higher-tier flagship</th></tr></thead>
-<tbody>
-<tr><td>Everyday speed</td><td class="this">Very strong</td><td>Very strong</td></tr>
-<tr><td>Battery capacity</td><td class="this">7,400 mAh advertised</td><td>Model dependent</td></tr>
-<tr><td>Camera flexibility</td><td>Main + ultrawide</td><td>May add telephoto</td></tr>
-<tr><td>Premium extras</td><td>Some trade-offs</td><td>Often more options</td></tr>
-<tr><td>Price</td><td class="this">Lower tier</td><td>Usually higher</td></tr>
-</tbody>
-</table>
-<p class="note">This is a category-level comparison, not a claim that the 15R beats every flagship. Prices and exact features change by model and sale.</p>
-</div>
-<div class="visual">
-<div style="max-width:320px;width:100%;padding:30px;border-radius:24px;border:1px solid #ffffff1b;background:linear-gradient(145deg,#171a20,#0a0b0d);box-shadow:0 25px 80px #0008">
-<div class="eyebrow red">The sensible choice</div>
-<div style="font-size:4rem;font-weight:900;letter-spacing:-.08em;margin:15px 0">15R</div>
-<p style="font-size:1rem">Spend on the performance and battery I will use every day — without paying extra for features I may not need.</p>
-<div class="chips"><span class="chip">Value</span><span class="chip">Capability</span><span class="chip">Balance</span></div>
-</div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow">06 · The budget</div>
-<h2>A purchase with a <span class="green">plan.</span></h2>
-<div class="price">₹48k–₹53k*</div>
-<p>That was the reported Indian launch-price range for the 256 GB and 512 GB versions. It is not a live quote: current offers, bank discounts and availability may change the final cost.</p>
-<div class="cardlist">
-<div class="item"><i>₹</i><div><strong>Compare the final price</strong><span>Check the official store and reputable retailers, including exchange and bank offers.</span></div></div>
-<div class="item"><i>✓</i><div><strong>Agree on expectations</strong><span>Set sensible screen-time boundaries, protect the phone and keep schoolwork first.</span></div></div>
-<div class="item"><i>♡</i><div><strong>Respect the family budget</strong><span>If now is not the right time financially, I will understand and discuss alternatives.</span></div></div>
-</div>
-<p class="note">*Reported launch prices; verify current Indian pricing before making a decision.</p>
-</div>
-<div class="visual">
-<div style="width:min(330px,90%);padding:30px;border:1px solid #ffffff1b;border-radius:24px;background:#111419">
-<div class="eyebrow">The deal</div>
-<h2 style="font-size:2.4rem">Trust + responsibility</h2>
-<p style="font-size:1rem">I will take care of it, use it purposefully and show that the investment is worthwhile.</p>
-<div class="chips"><span class="chip">Case + screen protector</span><span class="chip">Regular backups</span><span class="chip">Study first</span></div>
-</div>
-</div>
-</section>
-
-<section class="slide">
-<div>
-<div class="eyebrow red">Dad, here's my promise</div>
-<h2>Give me the tool.<br>I'll do the <span class="green">work.</span></h2>
-<p class="bigquote">“I'm not asking for a phone just to have the newest thing. I'm asking for a capable device that can support what I want to learn and build.”</p>
-<p>I understand this is a significant purchase. Let's compare the real prices together, choose a budget that makes sense, and agree on responsible use.</p>
-<div class="actions">
-<button class="action primary" onclick="restart()">Watch from the beginning ↺</button>
-<button class="action" onclick="toggleVoice()">🔊 <span id="voiceLabel">Turn narration off</span></button>
-</div>
-</div>
-<div class="visual">
-<div style="max-width:330px;text-align:center">
-<div style="font-size:7rem;line-height:1">♡</div>
-<div class="bigquote">Thank you for hearing me out.</div>
-<p style="margin-inline:auto">Love, Manas</p>
-</div>
-</div>
-</section>
-
-</main>
-<footer class="controls">
-<button class="nav" onclick="prev()" aria-label="Previous slide">←</button>
-<div class="progress"><div class="bar" id="bar"></div></div>
-<span class="counter" id="counter">01 / 08</span>
-<span class="hint">← → navigate · F fullscreen · Space narrate</span>
-<button class="nav" onclick="speakCurrent()" aria-label="Narrate slide">🔊</button>
-<button class="nav primary" onclick="next()">Next →</button>
-</footer>
+<div class="orbit"></div>
+<section class="scene active" data-duration="8500" data-voice="Dad, I want to show you why the OnePlus 15R could be a thoughtful and useful investment for me. Not just a new phone, but a tool for learning, creating and staying organised.">
+<div class="scene-number">01 / THE REQUEST</div><div class="content"><div class="kicker">A proposal for Dad</div><h1>Please buy<br>Manas a <span class="red">phone.</span></h1><p>Not just a device. A capable tool for learning, building projects, researching ideas and staying organised.</p><div class="metrics"><div class="metric"><b>Learn</b><span>with fewer limits</span></div><div class="metric"><b>Create</b><span>with confidence</span></div><div class="metric"><b>Grow</b><span>every day</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>ONEPLUS · 15R</small><div><div class="glowball"></div><strong>Power for<br>what's next.</strong></div><div class="tiles"><span>Study</span><span>Create</span><span>Research</span><span>Build</span></div></div></div></div></section>
+<section class="scene" data-duration="8500" data-voice="First, performance. The Snapdragon 8 Gen 5 platform is designed for demanding everyday tasks: switching between documents, browser tabs, video calls, coding tools and creative apps. The exact memory and storage depend on the version we choose.">
+<div class="scene-number">02 / PERFORMANCE</div><div class="content"><div class="kicker">Built for momentum</div><h2>A pocket-sized<br><span class="red">workbench.</span></h2><p>Move between documents, research, online classes and creative tools with a high-performance mobile platform.</p><div class="metrics"><div class="metric"><b>Snapdragon 8 Gen 5</b><span>mobile platform</span></div><div class="metric"><b>5G + Wi-Fi</b><span>connected when needed</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>FOCUS MODE</small><div><strong>One idea.<br>Many tabs.<br><span class="lime">One smooth flow.</span></strong><div class="glowball"></div></div><div class="tiles"><span>Docs</span><span>Browser</span><span>Notes</span><span>AI tools</span></div></div></div></div></section>
+<section class="scene" data-duration="8500" data-voice="A good phone can support learning in practical ways: reading PDFs, viewing diagrams, attending lessons, researching reliable sources and organising notes. It can also help me practise programming and manage personal projects.">
+<div class="scene-number">03 / LEARNING</div><div class="content"><div class="kicker">For a curious mind</div><h2>Make room for<br><span class="red">big ideas.</span></h2><div class="bullet"><i>↗</i><div><strong>Learn anywhere</strong><span>Online classes, lecture recordings and educational videos.</span></div></div><div class="bullet"><i>⌕</i><div><strong>Research smarter</strong><span>Compare sources, save references and organise notes.</span></div></div><div class="bullet"><i>⌘</i><div><strong>Build useful skills</strong><span>Practise coding and manage projects with cloud tools.</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>STUDY NOTES · 01</small><div><div class="glowball" style="background:radial-gradient(circle at 30% 25%,#fff,#c7ff72 13%,#267c5a 44%,#10141b 72%)"></div><strong>Small steps.<br>Real progress.</strong></div><div class="tiles"><span>PDFs</span><span>Classes</span><span>Notes</span><span>Projects</span></div></div></div></div></section>
+<section class="scene" data-duration="8500" data-voice="The large AMOLED display gives me space to read and create. The advertised battery capacity is 7,400 milliamp-hours, a standout on paper. Actual battery life depends on how the phone is used, so we should check the local model specifications and warranty.">
+<div class="scene-number">04 / DISPLAY + BATTERY</div><div class="content"><div class="kicker">Made to keep up</div><h2>Less charging.<br><span class="red">More doing.</span></h2><p>A large, vivid screen for reading and creating, paired with a high-capacity battery for long days.</p><div class="metrics"><div class="metric"><b>6.83-inch</b><span>AMOLED display</span></div><div class="metric"><b>7,400 mAh</b><span>advertised capacity</span></div><div class="metric"><b>Fast charge</b><span>check local bundle</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>YOUR DAY, AT A GLANCE</small><div><div class="glowball" style="background:radial-gradient(circle at 30% 25%,#fff,#b5ff67 13%,#267c5a 44%,#10141b 72%)"></div><strong>Ready when<br>you are.</strong></div><div class="tiles"><span>Morning</span><span>Classes</span><span>Projects</span><span>Evening</span></div></div></div></div></section>
+<section class="scene" data-duration="8500" data-voice="AI tools can explain difficult concepts, summarise material, help brainstorm and organise notes. Availability varies by app, account, region and software. I would use these tools to learn and check my work, not as a replacement for doing the work myself.">
+<div class="scene-number">05 / HELPFUL AI</div><div class="content"><div class="kicker">Ask · explore · verify</div><h2>Big questions<br>start <span class="red">small.</span></h2><p>Use compatible AI tools to understand concepts, summarise material and plan projects — while checking facts and doing the learning myself.</p><div class="metrics"><div class="metric"><b>Explain</b><span>complex ideas</span></div><div class="metric"><b>Organise</b><span>notes and plans</span></div><div class="metric"><b>Verify</b><span>important facts</span></div></div></div>
+<div class="visual"><div class="device"><div class="display" style="background:linear-gradient(160deg,#24163d,#08090d 70%)"><small>THINK · LEARN · IMPROVE</small><div><div class="glowball" style="background:radial-gradient(circle at 30% 25%,#fff,#a78bfa 13%,#5b35b7 44%,#10111b 72%)"></div><strong>Curiosity<br>in your pocket.</strong></div><div class="tiles"><span>Explain</span><span>Summarise</span><span>Plan</span><span>Verify</span></div></div></div></div></section>
+<section class="scene" data-duration="9000" data-voice="I also want to make a sensible choice, not just buy the most expensive phone. The 15R aims to offer strong performance and a large battery for less than a top-tier flagship. Some premium features, especially camera flexibility, may be different. We should compare the exact models and prices before deciding.">
+<div class="scene-number">06 / SMART VALUE</div><div class="content"><div class="kicker">A balanced decision</div><h2>Pay for what<br><span class="red">matters.</span></h2><p>The 15R aims to balance strong performance, battery life and price. It is not identical to a top-tier flagship, and camera features can differ.</p><div class="bullet"><i>✓</i><div><strong>Strong everyday performance</strong><span>For learning, multitasking and everyday tasks.</span></div></div><div class="bullet"><i>✓</i><div><strong>Large advertised battery</strong><span>Useful capacity, with real life depending on usage.</span></div></div><div class="bullet"><i>✓</i><div><strong>Know the trade-offs</strong><span>Compare camera features, warranty and final price first.</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>THE SENSIBLE CHOICE</small><div><div class="glowball"></div><strong>Capability.<br>Value.<br><span class="lime">Balance.</span></strong></div><div class="tiles"><span>Performance</span><span>Battery</span><span>Value</span><span>Purpose</span></div></div></div></div></section>
+<section class="scene" data-duration="9500" data-voice="For budgeting, the previously reported Indian launch price was around 48,000 to 53,000 rupees, depending on storage. That is not a live quote. We should compare the official store and trusted retailers, check bank offers and exchange deals, and choose only what fits the family budget.">
+<div class="scene-number">07 / THE BUDGET</div><div class="content"><div class="kicker">A purchase with a plan</div><h2>Let's choose<br><span class="lime">wisely.</span></h2><div class="price">₹48k–₹53k*</div><p>Previously reported launch-price range for different storage versions — not a live quote. We'll compare current offers and the final price together.</p><div class="metrics"><div class="metric"><b>Compare</b><span>trusted retailers</span></div><div class="metric"><b>Protect</b><span>case + screen guard</span></div><div class="metric"><b>Respect</b><span>the family budget</span></div></div><p style="font-size:.8rem;color:#858b95">*Verify current Indian pricing, warranty and exact specifications before purchase.</p></div>
+<div class="visual"><div class="device"><div class="display"><small>THE AGREEMENT</small><div><div class="glowball" style="background:radial-gradient(circle at 30% 25%,#fff,#c7ff72 13%,#267c5a 44%,#10141b 72%)"></div><strong>Trust is part<br>of the deal.</strong></div><div class="tiles"><span>Care</span><span>Backups</span><span>Balance</span><span>Study first</span></div></div></div></div></section>
+<section class="scene" data-duration="11000" data-voice="Dad, I'm not asking for a phone just to have the newest thing. I'm asking for a capable device that can support what I want to learn and build. I will take care of it, use it purposefully and respect the rules we agree on. Thank you for hearing me out. Love, Manas.">
+<div class="scene-number">08 / MY PROMISE</div><div class="content"><div class="kicker">Dad, here's my promise</div><h2>Give me the tool.<br>I'll do the <span class="lime">work.</span></h2><div class="quote">“I'm asking for a device that can support what I want to learn and build.”</div><p>Let's compare the real prices, agree on responsible use and choose a budget that makes sense for our family.</p><div class="metrics"><div class="metric"><b>Thank you, Dad.</b><span>Love, Manas ♡</span></div></div></div>
+<div class="visual"><div class="device"><div class="display"><small>ONEPLUS · 15R</small><div><div class="glowball"></div><strong>The next step<br>starts here.</strong></div><div class="tiles"><span>Learn</span><span>Create</span><span>Grow</span><span>Thank you</span></div></div></div></div></section>
+<div class="subtitle" id="subtitle"></div>
+<div class="controls"><button class="control" id="back" aria-label="Previous scene">↶</button><button class="control main" id="play">▶ Play film</button><div class="timeline"><span id="progress"></span></div><span class="time" id="clock">00:00</span><button class="control" id="voice">🔊 Voice</button><button class="control" id="full">⛶</button><button class="control" id="next" aria-label="Next scene">↷</button></div>
 </div>
 <script>
-const slides=[...document.querySelectorAll('.slide')];
-let current=0,voiceOn=true;
-
-function show(n){
-  current=(n+slides.length)%slides.length;
-  slides.forEach((s,i)=>s.classList.toggle('active',i===current));
-  document.getElementById('bar').style.width=((current+1)/slides.length*100)+'%';
-  document.getElementById('counter').textContent=
-    String(current+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
-  if(voiceOn)setTimeout(speakCurrent,220);
-}
-
-function next(){show(current+1)}
-function prev(){show(current-1)}
-function restart(){show(0)}
-
-function stopVoice(){
-  if('speechSynthesis' in window)window.speechSynthesis.cancel();
-}
-
-function speakCurrent(){
-  if(!voiceOn||!('speechSynthesis' in window))return;
-  stopVoice();
-  const text=[...slides[current].querySelectorAll('h1,h2,p,.stat b,.item strong,.eyebrow')]
-    .map(x=>x.innerText).join('. ');
-  const u=new SpeechSynthesisUtterance(text);
-  u.rate=.94;
-  u.pitch=1;
-  const v=speechSynthesis.getVoices().find(x=>/en-IN|en-GB|en-US/i.test(x.lang));
-  if(v)u.voice=v;
-  speechSynthesis.speak(u);
-}
-
-function toggleVoice(){
-  voiceOn=!voiceOn;
-  document.getElementById('voiceLabel').textContent=
-    voiceOn?'Turn narration off':'Turn narration on';
-  if(!voiceOn)stopVoice();
-  else speakCurrent();
-}
-
-document.addEventListener('keydown',e=>{
-  if(e.key==='ArrowRight'){next()}
-  else if(e.key==='ArrowLeft'){prev()}
-  else if(e.key===' '){e.preventDefault();speakCurrent()}
-  else if(e.key.toLowerCase()==='f'){
-    if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  }
-});
-
-show(0);
+const scenes=[...document.querySelectorAll('.scene')],progress=document.getElementById('progress'),playBtn=document.getElementById('play'),clock=document.getElementById('clock'),voiceBtn=document.getElementById('voice'),subtitle=document.getElementById('subtitle');
+let index=0,playing=false,voiceOn=false,startedAt=0,elapsed=0,raf=0,timer=0,sceneStart=0;
+const duration=s=>Number(scenes[s].dataset.duration||8500);
+const total=scenes.reduce((a,s)=>a+Number(s.dataset.duration||8500),0);
+function stopSpeech(){if('speechSynthesis'in window)window.speechSynthesis.cancel();subtitle.classList.remove('show')}
+function narrate(){if(!voiceOn||!('speechSynthesis'in window))return;stopSpeech();const text=scenes[index].dataset.voice||'';subtitle.textContent=text;subtitle.classList.add('show');const u=new SpeechSynthesisUtterance(text);u.rate=.94;u.pitch=1;const v=speechSynthesis.getVoices().find(x=>/en-IN|en-GB|en-US/i.test(x.lang));if(v)u.voice=v;speechSynthesis.speak(u)}
+function setScene(n){stopSpeech();index=(n+scenes.length)%scenes.length;scenes.forEach((s,i)=>s.classList.toggle('active',i===index));elapsed=scenes.slice(0,index).reduce((a,s)=>a+Number(s.dataset.duration||8500),0);sceneStart=performance.now();update();if(playing&&voiceOn)narrate()}
+function update(){const currentElapsed=elapsed+(playing?performance.now()-sceneStart:0);progress.style.width=Math.min(100,currentElapsed/total*100)+'%';const sec=Math.floor(currentElapsed/1000);clock.textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');if(playing){if(performance.now()-sceneStart>=duration(index)){if(index===scenes.length-1){pause();progress.style.width='100%';return}setScene(index+1)}else raf=requestAnimationFrame(update)}}
+function play(){if(index===scenes.length-1){setScene(0)}playing=true;sceneStart=performance.now();playBtn.textContent='Ⅱ Pause';if(voiceOn)narrate();cancelAnimationFrame(raf);raf=requestAnimationFrame(update)}
+function pause(){if(!playing)return;elapsed+=performance.now()-sceneStart;playing=false;cancelAnimationFrame(raf);stopSpeech();playBtn.textContent='▶ Continue';update()}
+function toggle(){playing?pause():play()}
+document.getElementById('back').addEventListener('click',()=>{const was=playing;if(was)pause();setScene(Math.max(0,index-1));if(was)play()});
+document.getElementById('next').addEventListener('click',()=>{const was=playing;if(was)pause();if(index===scenes.length-1)setScene(0);else setScene(index+1);if(was)play()});
+playBtn.addEventListener('click',toggle);
+voiceBtn.addEventListener('click',()=>{voiceOn=!voiceOn;voiceBtn.textContent=voiceOn?'🔊 Voice on':'🔇 Voice off';if(voiceOn){if(playing)narrate();else{const old=playing;playing=true;narrate();playing=old}}else stopSpeech()});
+document.getElementById('full').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('back').click();if(e.key===' '){e.preventDefault();toggle()}if(e.key.toLowerCase()==='f')document.getElementById('full').click()});
+setScene(0);
 </script>
 </body>
 </html>
