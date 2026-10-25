@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08090b">
+<title>Please Buy Manas a Phone</title>
+<style>
+:root{--bg:#08090b;--muted:#a8b0bb;--text:#f6f7f9;--red:#ff3c48;--green:#b5ff67}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 80% 20%,#2a1018 0,transparent 30%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer}
+.deck{min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;align-items:center;padding:20px 5vw;color:var(--muted);font-size:.85rem;letter-spacing:.08em;text-transform:uppercase}
+.brand{color:white;font-weight:800}
+.brand span{color:var(--red)}
+main{width:min(1180px,90vw);margin:auto;flex:1;display:flex;align-items:center;padding:30px 0 90px}
+.slide{display:none;width:100%;grid-template-columns:1.1fr .9fr;gap:6vw;align-items:center;animation:fade .4s ease}
+.slide.active{display:grid}
+.eyebrow{color:var(--green);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem}
+.eyebrow.red{color:var(--red)}
+h1{font-size:clamp(3rem,7vw,6.7rem);line-height:.98;letter-spacing:-.065em;margin:18px 0 24px}
+h2{font-size:clamp(2.4rem,5vw,4.7rem);line-height:1.02;letter-spacing:-.05em;margin:16px 0 22px}
+p{font-size:clamp(1rem,1.4vw,1.2rem);line-height:1.75;color:#c4cad2;max-width:62ch}
+.accent{color:var(--red)}
+.green{color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.chip{border:1px solid #343840;border-radius:99px;padding:9px 14px;color:#e4e7eb;font-size:.88rem}
+.visual{min-height:390px;display:grid;place-items:center;position:relative}
+.phone{width:230px;height:440px;border:7px solid #454952;border-radius:38px;background:linear-gradient(160deg,#171b22,#050608);box-shadow:0 0 0 2px #111,0 30px 90px #000a;position:relative;padding:18px;transform:rotate(7deg)}
+.phone:before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:75px;height:18px;border-radius:20px;background:#050608}
+.screen{height:100%;border-radius:23px;background:linear-gradient(155deg,#1c2933,#07090d 58%,#3a111b);padding:40px 14px 18px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.orb{width:120px;height:120px;border-radius:50%;margin:25px auto;background:radial-gradient(circle at 30% 25%,#fff,#ff6d74 12%,#b30f26 45%,#17151b 72%);box-shadow:0 0 55px #ff3c4855}
+.screen small{color:#aeb7c3}
+.screen strong{font-size:1.5rem;line-height:1.1}
+.screen .mini{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mini span{background:#ffffff12;border:1px solid #ffffff18;border-radius:10px;padding:10px 7px;font-size:.72rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
+.stat{padding:17px;background:#ffffff08;border:1px solid #ffffff14;border-radius:16px}
+.stat b{display:block;font-size:1.1rem;color:white;margin-bottom:5px}
+.stat span{font-size:.82rem;color:var(--muted)}
+.compare{width:100%;border-collapse:collapse;margin-top:20px;font-size:.95rem}
+.compare th,.compare td{text-align:left;padding:14px 12px;border-bottom:1px solid #ffffff18}
+.compare th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.compare .this{color:var(--green)}
+.cardlist{display:grid;gap:12px;margin-top:22px}
+.item{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:#ffffff08;border:1px solid #ffffff12}
+.item i{font-style:normal;color:var(--green);font-size:1.25rem}
+.item strong{display:block;margin-bottom:4px}
+.item span{color:var(--muted);font-size:.94rem;line-height:1.5}
+.controls{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:center;gap:14px;padding:17px 5vw;background:linear-gradient(transparent,#08090b 25%)}
+.progress{height:3px;background:#ffffff1c;flex:1;border-radius:5px;overflow:hidden}
+.bar{height:100%;width:12.5%;background:var(--red);transition:width .25s}
+.nav{border:1px solid #393d45;background:#15171c;color:white;border-radius:50px;padding:10px 17px}
+.nav.primary{background:var(--red);border-color:var(--red);font-weight:800}
+.counter{font-variant-numeric:tabular-nums;color:var(--muted);min-width:52px;text-align:center;font-size:.9rem}
+.hint{font-size:.75rem;color:#747c87}
+.note{font-size:.83rem!important;color:#8e98a5!important}
+.price{font-size:clamp(2.7rem,6vw,5rem);font-weight:900;letter-spacing:-.06em;color:var(--green)}
+.bigquote{font-size:clamp(1.5rem,3vw,2.5rem);line-height:1.4;color:white;font-weight:700;letter-spacing:-.03em}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.action{border:1px solid #393d45;border-radius:12px;padding:12px 16px;color:white;background:#17191f}
+.action.primary{background:var(--red);border-color:var(--red);font-weight:800}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){
+main{padding:22px 0 105px}
+.slide.active{grid-template-columns:1fr;gap:18px}
+.visual{min-height:260px}
+.phone{transform:scale(.72) rotate(5deg);margin:-55px 0}
+.top{padding:16px 5vw}
+.hint{display:none}
+.stats{margin-top:18px}
+.controls{gap:8px;padding:12px 4vw}
+.nav{padding:10px 13px}
+.compare th,.compare td{padding:10px 6px;font-size:.8rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="deck">
+<header class="top">
+<div class="brand">THE CASE <span>FOR 15R</span></div>
+<div>Manas · A thoughtful request</div>
+</header>
+<main>
+
+<section class="slide active">
+<div>
+<div class="eyebrow red">A proposal for Dad</div>
+<h1>Please buy<br>Manas a <span class="accent">phone.</span></h1>
+<p>Not just a new device. A practical tool for learning, building projects, researching ideas and staying organised — chosen with value and responsibility in mind.</p>
+<div class="chips">
+<span class="chip">Study-ready</span>
+<span class="chip">Built for multitasking</span>
+<span class="chip">Long-lasting battery</span>
+</div>
+</div>
+<div class="visual">
+<div class="phone"><div class="screen">
+<small>ONEPLUS · 15R</small>
+<div>
+<div class="orb"></div>
+<strong>Power for<br>what's next.</strong>
+</div>
+<div class="mini">
+<span>Study</span><span>Create</span><span>Research</span><span>Build</span>
+</div>
+</div></div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">01 · Performance</div>
+<h2>A pocket-sized <span class="accent">workbench.</span></h2>
+<p>The Snapdragon 8 Gen 5 platform and fast memory are designed for demanding everyday tasks: switching between documents, browser tabs, video calls, coding tools and creative apps without constantly waiting.</p>
+<div class="stats">
+<div class="stat"><b>Snapdragon 8 Gen 5</b><span>High-performance mobile platform</span></div>
+<div class="stat"><b>12 GB RAM*</b><span>Room for multitasking</span></div>
+<div class="stat"><b>UFS 4.1 storage*</b><span>Fast app and file access</span></div>
+<div class="stat"><b>5G + Wi‑Fi</b><span>Flexible connectivity</span></div>
+</div>
+<p class="note">*Configuration depends on the version sold in your market. Check the exact Indian model before purchase.</p>
+</div>
+<div class="visual">
+<div class="phone"><div class="screen">
+<small>FOCUS MODE</small>
+<div>
+<strong>One idea.<br>Many tabs.<br><span class="green">One smooth flow.</span></strong>
+<div class="orb"></div>
+</div>
+<div class="mini">
+<span>Docs</span><span>Browser</span><span>Notes</span><span>AI tools</span>
+</div>
+</div></div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">02 · Learning</div>
+<h2>Made for the <span class="accent">curious mind.</span></h2>
+<p>A large, high-resolution AMOLED screen can make reading PDFs, viewing diagrams, attending online lessons and reviewing project documentation more comfortable.</p>
+<div class="cardlist">
+<div class="item"><i>↗</i><div><strong>Learn anywhere</strong><span>Online classes, lecture recordings and educational videos.</span></div></div>
+<div class="item"><i>⌕</i><div><strong>Research faster</strong><span>Compare sources, save references and organise notes.</span></div></div>
+<div class="item"><i>⌘</i><div><strong>Build useful skills</strong><span>Practise programming, use cloud tools and manage personal projects.</span></div></div>
+</div>
+</div>
+<div class="visual">
+<div class="phone"><div class="screen" style="background:linear-gradient(145deg,#122c36,#090c11)">
+<small>STUDY NOTES · 01</small>
+<div>
+<div class="eyebrow">LEARN / TEST / IMPROVE</div>
+<strong>Small steps.<br>Real progress.</strong>
+<div style="margin-top:22px;height:8px;border-radius:8px;background:#ffffff20"><div style="height:100%;width:72%;background:#b5ff67;border-radius:8px"></div></div>
+<small>Weekly learning goals</small>
+</div>
+<div class="mini"><span>PDFs</span><span>Classes</span><span>Notes</span><span>Projects</span></div>
+</div></div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">03 · Display & battery</div>
+<h2>Less charging.<br><span class="accent">More doing.</span></h2>
+<p>The 6.83-inch AMOLED display offers generous space for reading and creating. The advertised 7,400 mAh battery is a standout feature, though real battery life depends on signal, brightness and workload.</p>
+<div class="stats">
+<div class="stat"><b>6.83-inch</b><span>AMOLED display</span></div>
+<div class="stat"><b>7,400 mAh</b><span>Advertised battery capacity</span></div>
+<div class="stat"><b>High refresh rate</b><span>Smoother scrolling where supported</span></div>
+<div class="stat"><b>Fast charging</b><span>Charger and regional specs vary</span></div>
+</div>
+<p class="note">Verify local specifications, charger inclusion, warranty and durability rating with the Indian retailer.</p>
+</div>
+<div class="visual">
+<div class="phone"><div class="screen">
+<small>YOUR DAY, AT A GLANCE</small>
+<div>
+<div class="orb" style="background:radial-gradient(circle at 30% 25%,#fff,#b5ff67 13%,#267c5a 44%,#10141b 72%)"></div>
+<strong>Ready when<br>you are.</strong>
+</div>
+<div class="mini"><span>Morning</span><span>Classes</span><span>Projects</span><span>Evening</span></div>
+</div></div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">04 · Helpful AI</div>
+<h2>AI that can help me <span class="accent">learn.</span></h2>
+<p>Compatible Android phones can support AI tools that explain concepts, summarise material, help brainstorm and assist with writing. Availability depends on the app, region, account, age and software version.</p>
+<div class="cardlist">
+<div class="item"><i>✦</i><div><strong>Understand difficult topics</strong><span>Ask for simpler explanations, examples and practice questions — then verify important facts.</span></div></div>
+<div class="item"><i>▤</i><div><strong>Work with notes and documents</strong><span>Use supported tools to organise information and create study outlines.</span></div></div>
+<div class="item"><i>◎</i><div><strong>Search what I see</strong><span>Features such as Circle to Search may be available on compatible devices and supported software.</span></div></div>
+</div>
+<p class="note">AI is a study assistant, not a replacement for learning, original work or checking sources.</p>
+</div>
+<div class="visual">
+<div class="phone"><div class="screen" style="background:linear-gradient(160deg,#1e1731,#08090d 70%)">
+<small>ASK · EXPLORE · VERIFY</small>
+<div>
+<div class="orb" style="background:radial-gradient(circle at 30% 25%,#fff,#a78bfa 13%,#5b35b7 44%,#10111b 72%)"></div>
+<strong>Big questions<br>start small.</strong>
+</div>
+<div class="mini"><span>Explain</span><span>Summarise</span><span>Brainstorm</span><span>Verify</span></div>
+</div></div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">05 · Honest comparison</div>
+<h2>Smart value, not just a <span class="accent">big name.</span></h2>
+<p>The 15R aims to deliver flagship-class performance and a large battery at a lower price than the top-tier OnePlus model. It is not identical to a full flagship: camera versatility, wireless charging and other premium extras can differ.</p>
+<table class="compare">
+<thead><tr><th>What matters</th><th>OnePlus 15R</th><th>Higher-tier flagship</th></tr></thead>
+<tbody>
+<tr><td>Everyday speed</td><td class="this">Very strong</td><td>Very strong</td></tr>
+<tr><td>Battery capacity</td><td class="this">7,400 mAh advertised</td><td>Model dependent</td></tr>
+<tr><td>Camera flexibility</td><td>Main + ultrawide</td><td>May add telephoto</td></tr>
+<tr><td>Premium extras</td><td>Some trade-offs</td><td>Often more options</td></tr>
+<tr><td>Price</td><td class="this">Lower tier</td><td>Usually higher</td></tr>
+</tbody>
+</table>
+<p class="note">This is a category-level comparison, not a claim that the 15R beats every flagship. Prices and exact features change by model and sale.</p>
+</div>
+<div class="visual">
+<div style="max-width:320px;width:100%;padding:30px;border-radius:24px;border:1px solid #ffffff1b;background:linear-gradient(145deg,#171a20,#0a0b0d);box-shadow:0 25px 80px #0008">
+<div class="eyebrow red">The sensible choice</div>
+<div style="font-size:4rem;font-weight:900;letter-spacing:-.08em;margin:15px 0">15R</div>
+<p style="font-size:1rem">Spend on the performance and battery I will use every day — without paying extra for features I may not need.</p>
+<div class="chips"><span class="chip">Value</span><span class="chip">Capability</span><span class="chip">Balance</span></div>
+</div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow">06 · The budget</div>
+<h2>A purchase with a <span class="green">plan.</span></h2>
+<div class="price">₹48k–₹53k*</div>
+<p>That was the reported Indian launch-price range for the 256 GB and 512 GB versions. It is not a live quote: current offers, bank discounts and availability may change the final cost.</p>
+<div class="cardlist">
+<div class="item"><i>₹</i><div><strong>Compare the final price</strong><span>Check the official store and reputable retailers, including exchange and bank offers.</span></div></div>
+<div class="item"><i>✓</i><div><strong>Agree on expectations</strong><span>Set sensible screen-time boundaries, protect the phone and keep schoolwork first.</span></div></div>
+<div class="item"><i>♡</i><div><strong>Respect the family budget</strong><span>If now is not the right time financially, I will understand and discuss alternatives.</span></div></div>
+</div>
+<p class="note">*Reported launch prices; verify current Indian pricing before making a decision.</p>
+</div>
+<div class="visual">
+<div style="width:min(330px,90%);padding:30px;border:1px solid #ffffff1b;border-radius:24px;background:#111419">
+<div class="eyebrow">The deal</div>
+<h2 style="font-size:2.4rem">Trust + responsibility</h2>
+<p style="font-size:1rem">I will take care of it, use it purposefully and show that the investment is worthwhile.</p>
+<div class="chips"><span class="chip">Case + screen protector</span><span class="chip">Regular backups</span><span class="chip">Study first</span></div>
+</div>
+</div>
+</section>
+
+<section class="slide">
+<div>
+<div class="eyebrow red">Dad, here's my promise</div>
+<h2>Give me the tool.<br>I'll do the <span class="green">work.</span></h2>
+<p class="bigquote">“I'm not asking for a phone just to have the newest thing. I'm asking for a capable device that can support what I want to learn and build.”</p>
+<p>I understand this is a significant purchase. Let's compare the real prices together, choose a budget that makes sense, and agree on responsible use.</p>
+<div class="actions">
+<button class="action primary" onclick="restart()">Watch from the beginning ↺</button>
+<button class="action" onclick="toggleVoice()">🔊 <span id="voiceLabel">Turn narration off</span></button>
+</div>
+</div>
+<div class="visual">
+<div style="max-width:330px;text-align:center">
+<div style="font-size:7rem;line-height:1">♡</div>
+<div class="bigquote">Thank you for hearing me out.</div>
+<p style="margin-inline:auto">Love, Manas</p>
+</div>
+</div>
+</section>
+
+</main>
+<footer class="controls">
+<button class="nav" onclick="prev()" aria-label="Previous slide">←</button>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<span class="counter" id="counter">01 / 08</span>
+<span class="hint">← → navigate · F fullscreen · Space narrate</span>
+<button class="nav" onclick="speakCurrent()" aria-label="Narrate slide">🔊</button>
+<button class="nav primary" onclick="next()">Next →</button>
+</footer>
+</div>
+<script>
+const slides=[...document.querySelectorAll('.slide')];
+let current=0,voiceOn=true;
+
+function show(n){
+  current=(n+slides.length)%slides.length;
+  slides.forEach((s,i)=>s.classList.toggle('active',i===current));
+  document.getElementById('bar').style.width=((current+1)/slides.length*100)+'%';
+  document.getElementById('counter').textContent=
+    String(current+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  if(voiceOn)setTimeout(speakCurrent,220);
+}
+
+function next(){show(current+1)}
+function prev(){show(current-1)}
+function restart(){show(0)}
+
+function stopVoice(){
+  if('speechSynthesis' in window)window.speechSynthesis.cancel();
+}
+
+function speakCurrent(){
+  if(!voiceOn||!('speechSynthesis' in window))return;
+  stopVoice();
+  const text=[...slides[current].querySelectorAll('h1,h2,p,.stat b,.item strong,.eyebrow')]
+    .map(x=>x.innerText).join('. ');
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=.94;
+  u.pitch=1;
+  const v=speechSynthesis.getVoices().find(x=>/en-IN|en-GB|en-US/i.test(x.lang));
+  if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+
+function toggleVoice(){
+  voiceOn=!voiceOn;
+  document.getElementById('voiceLabel').textContent=
+    voiceOn?'Turn narration off':'Turn narration on';
+  if(!voiceOn)stopVoice();
+  else speakCurrent();
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){next()}
+  else if(e.key==='ArrowLeft'){prev()}
+  else if(e.key===' '){e.preventDefault();speakCurrent()}
+  else if(e.key.toLowerCase()==='f'){
+    if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+});
+
+show(0);
+</script>
+</body>
+</html>
