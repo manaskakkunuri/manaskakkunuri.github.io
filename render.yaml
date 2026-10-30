@@ -28,7 +28,7 @@ services:
       - key: ACCESS_TOKEN_MINUTES
         value: "30"
       - key: ALLOWED_ORIGINS
-        value: https://manaskakkunuri.github.io
+        value: https://manaskakkunuri.github.io,http://127.0.0.1:8765,http://localhost:8765
       - key: UPI_ID
         value: shreetulasi@oksbi
       - key: GEMINI_API_KEY
